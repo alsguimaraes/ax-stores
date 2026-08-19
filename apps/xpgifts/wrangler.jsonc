@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "xpgifts",
+	"name": "ax-stores",
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2026-08-15",
 	"compatibility_flags": ["nodejs_als"],
