@@ -15,10 +15,9 @@
 	"observability": {
 		"enabled": true
 	},
-	"upload_source_maps": true,
+	"upload_source_maps": true
 	// WC_CONSUMER_KEY / WC_CONSUMER_SECRET are secrets, not vars — set them via
 	// `.dev.vars` locally and `wrangler secret put` in production. See TODO.md.
-	"vars": {}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
