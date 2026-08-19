@@ -25,7 +25,7 @@ export async function wcFetch<T>(
 
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(url, {
-		headers: { Authorization: `Basic ${credentials}` },
+		headers: { Authorization: `Basic ${credentials}`, XP_RAY: "1"  },
 	});
 
 	if (!response.ok) {
@@ -65,7 +65,7 @@ export async function wcFetchPaginated<T>(
 	console.warn(url.toString());
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(url, {
-		headers: { Authorization: `Basic ${credentials}` },
+		headers: { Authorization: `Basic ${credentials}`, XP_RAY: "1" },
 	});
 
 	if (!response.ok) {
