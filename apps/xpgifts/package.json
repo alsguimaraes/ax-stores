@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "wrangler types ./src/worker-configuration.d.ts --check && vite build",
+		"build:check": "wrangler types ./src/worker-configuration.d.ts --check && vite build",
+		"build": "vite build",
 		"preview": "pnpm run build && wrangler dev",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "wrangler types ./src/worker-configuration.d.ts --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
