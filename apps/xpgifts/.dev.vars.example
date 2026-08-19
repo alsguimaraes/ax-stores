@@ -1,0 +1,5 @@
+# Copy to .dev.vars and fill in real values from WooCommerce → Settings →
+# Advanced → REST API on the store's WP admin. Never commit .dev.vars itself
+# (it's gitignored) — see TODO.md for the full WooCommerce integration plan.
+WC_CONSUMER_KEY=
+WC_CONSUMER_SECRET=
