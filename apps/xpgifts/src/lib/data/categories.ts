@@ -3,6 +3,7 @@ import {
 	type Paginated,
 	paginateArray,
 	stripHtml,
+	TTL,
 	type WcCategory,
 	type WcEnv,
 	wcFetch,
@@ -116,6 +117,7 @@ export async function getOtherCategories(
 			hide_empty: true,
 			parent: 0,
 		},
+		TTL.M,
 	);
 	const items = result.items
 		.filter(
@@ -134,9 +136,14 @@ export async function getCategoryBySlug(
 ): Promise<Category | undefined> {
 	if (!isWcConfigured(env))
 		return mockCategories.find((category) => category.slug === slug);
-	const categories = await wcFetch<WcCategory[]>(env, "/products/categories", {
-		slug,
-	});
+	const categories = await wcFetch<WcCategory[]>(
+		env,
+		"/products/categories",
+		{
+			slug,
+		},
+		TTL.L,
+	);
 	return categories[0] ? mapWcCategory(categories[0]) : undefined;
 }
 
@@ -160,6 +167,7 @@ export async function getChildCategories(
 			parent: parentId,
 			hide_empty: true,
 		},
+		TTL.M,
 	);
 	return { ...result, items: result.items.map(mapWcCategory) };
 }

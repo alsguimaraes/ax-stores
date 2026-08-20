@@ -2,8 +2,14 @@ export type WcEnv = {
 	WC_STORE_URL: string;
 	WC_CONSUMER_KEY: string;
 	WC_CONSUMER_SECRET: string;
+	XPGIFTS: KVNamespace;
 };
 
+export const TTL = {
+	S: 90,
+	M: 360,
+	L: 900,
+};
 // Falls back to mock data (see src/lib/data/*.ts) whenever these aren't set,
 // so local dev works without a real store. Set them in .dev.vars locally and
 // via `wrangler secret put` / wrangler.jsonc `vars` in production — see TODO.md.
@@ -17,10 +23,17 @@ export async function wcFetch<T>(
 	env: WcEnv,
 	path: string,
 	params: Record<string, string | number | boolean | undefined> = {},
+	ttl = 0,
 ): Promise<T> {
 	const url = new URL(`/wp-json/wc/v3${path}`, env.WC_STORE_URL);
 	for (const [key, value] of Object.entries(params)) {
 		if (value !== undefined) url.searchParams.set(key, String(value));
+	}
+	const cacheKey = url.toString();
+
+	if (ttl > 0) {
+		const cached = await env.XPGIFTS.get<T>(cacheKey, "json");
+		if (cached !== null) return cached;
 	}
 
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
@@ -34,7 +47,13 @@ export async function wcFetch<T>(
 		);
 	}
 
-	return response.json() as Promise<T>;
+	const data = (await response.json()) as T;
+	// Cloudflare KV rejects expirationTtl below 60s.
+	if (ttl > 0)
+		await env.XPGIFTS.put(cacheKey, JSON.stringify(data), {
+			expirationTtl: ttl,
+		});
+	return data;
 }
 
 export type Paginated<T> = {
@@ -56,13 +75,20 @@ export async function wcFetchPaginated<T>(
 		_unstable_tax_topics?: string;
 		per_page: number;
 	},
+	ttl = 0,
 ): Promise<Paginated<T>> {
 	const page = params.page ?? 1;
 	const url = new URL(`/wp-json/wc/v3${path}`, env.WC_STORE_URL);
 	for (const [key, value] of Object.entries({ ...params, page })) {
 		if (value !== undefined) url.searchParams.set(key, String(value));
 	}
-	console.warn(url.toString());
+	const cacheKey = url.toString();
+
+	if (ttl > 0) {
+		const cached = await env.XPGIFTS.get<Paginated<T>>(cacheKey, "json");
+		if (cached !== null) return cached;
+	}
+
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(url, {
 		headers: { Authorization: `Basic ${credentials}`, "User-Agent": "XP-RAY" },
@@ -78,7 +104,13 @@ export async function wcFetchPaginated<T>(
 	const totalPages = Number(response.headers.get("X-WP-TotalPages") ?? 0);
 	const items = (await response.json()) as T[];
 
-	return { items, page, perPage: params.per_page, total, totalPages };
+	const result = { items, page, perPage: params.per_page, total, totalPages };
+	// Cloudflare KV rejects expirationTtl below 60s.
+	if (ttl > 0)
+		await env.XPGIFTS.put(cacheKey, JSON.stringify(result), {
+			expirationTtl: ttl,
+		});
+	return result;
 }
 
 // Client-side pagination over the mock arrays, so the mock fallback (see

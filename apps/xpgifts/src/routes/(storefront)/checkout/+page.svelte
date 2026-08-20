@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { getCartContext } from "$lib/stores/cart-context";
+	import { untrack } from "svelte";
 
 	let { data } = $props();
 	const cart = getCartContext();
 
 	let step = $state<"shipping" | "payment" | "review">("shipping");
-	let selectedAddressId = $state(data.addresses.find((a) => a.isDefault)?.id ?? data.addresses[0]?.id);
+	let selectedAddressId = $state(
+		untrack(() => data.addresses.find((a) => a.isDefault)?.id ?? data.addresses[0]?.id),
+	);
 
 	const subtotal = $derived(cart.items.reduce((sum, item) => sum + item.quantity * item.product.price, 0));
 	const shipping = $derived(cart.items.length > 0 ? 5.99 : 0);

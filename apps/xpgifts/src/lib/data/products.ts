@@ -3,6 +3,7 @@ import {
 	type Paginated,
 	paginateArray,
 	stripHtml,
+	TTL,
 	type WcEnv,
 	type WcProduct,
 	wcFetch,
@@ -292,10 +293,15 @@ export async function getProducts(
 ): Promise<Paginated<Product>> {
 	if (!isWcConfigured(env))
 		return paginateArray(mockProducts, page, PRODUCTS_PER_PAGE);
-	const result = await wcFetchPaginated<WcProduct>(env, "/products", {
-		page,
-		per_page: PRODUCTS_PER_PAGE,
-	});
+	const result = await wcFetchPaginated<WcProduct>(
+		env,
+		"/products",
+		{
+			page,
+			per_page: PRODUCTS_PER_PAGE,
+		},
+		TTL.S,
+	);
 	return { ...result, items: result.items.map(mapWcProduct) };
 }
 
@@ -305,7 +311,12 @@ export async function getProductBySlug(
 ): Promise<Product | undefined> {
 	if (!isWcConfigured(env))
 		return mockProducts.find((product) => product.slug === slug);
-	const products = await wcFetch<WcProduct[]>(env, "/products", { slug });
+	const products = await wcFetch<WcProduct[]>(
+		env,
+		"/products",
+		{ slug },
+		TTL.S,
+	);
 	return products[0] ? mapWcProduct(products[0]) : undefined;
 }
 
@@ -325,14 +336,20 @@ export async function getProductsByCategory(
 		env,
 		"/products/categories",
 		{ slug: categorySlug },
+		TTL.M,
 	);
 	const categoryId = categories[0]?.id;
 	if (!categoryId) return paginateArray([], page, PRODUCTS_PER_PAGE);
-	const result = await wcFetchPaginated<WcProduct>(env, "/products", {
-		page,
-		category: categoryId,
-		per_page: PRODUCTS_PER_PAGE,
-	});
+	const result = await wcFetchPaginated<WcProduct>(
+		env,
+		"/products",
+		{
+			page,
+			category: categoryId,
+			per_page: PRODUCTS_PER_PAGE,
+		},
+		TTL.S,
+	);
 	return { ...result, items: result.items.map(mapWcProduct) };
 }
 
@@ -347,12 +364,17 @@ export async function getProductsByTheme(
 		);
 		return paginateArray(products, page, PRODUCTS_PER_PAGE);
 	}
-	const result = await wcFetchPaginated<WcProduct>(env, "/products", {
-		page,
-		theme: themeSlug,
-		per_page: PRODUCTS_PER_PAGE,
-	});
-	console.warn(result.items.map((i) => i.name));
+	const result = await wcFetchPaginated<WcProduct>(
+		env,
+		"/products",
+		{
+			page,
+			theme: themeSlug,
+			per_page: PRODUCTS_PER_PAGE,
+		},
+		TTL.S,
+	);
+
 	return { ...result, items: result.items.map(mapWcProduct) };
 }
 
@@ -372,11 +394,16 @@ export async function searchProducts(
 		);
 		return paginateArray(products, page, PRODUCTS_PER_PAGE);
 	}
-	const result = await wcFetchPaginated<WcProduct>(env, "/products", {
-		page,
-		search: q,
-		per_page: PRODUCTS_PER_PAGE,
-	});
+	const result = await wcFetchPaginated<WcProduct>(
+		env,
+		"/products",
+		{
+			page,
+			search: q,
+			per_page: PRODUCTS_PER_PAGE,
+		},
+		TTL.S,
+	);
 	return { ...result, items: result.items.map(mapWcProduct) };
 }
 
@@ -385,10 +412,15 @@ export async function getFeaturedProducts(
 	limit = 8,
 ): Promise<Product[]> {
 	if (!isWcConfigured(env)) return mockProducts.slice(0, limit);
-	const products = await wcFetch<WcProduct[]>(env, "/products", {
-		featured: true,
-		per_page: limit,
-	});
+	const products = await wcFetch<WcProduct[]>(
+		env,
+		"/products",
+		{
+			featured: true,
+			per_page: limit,
+		},
+		TTL.M,
+	);
 	return products.map(mapWcProduct);
 }
 

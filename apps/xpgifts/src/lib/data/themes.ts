@@ -2,6 +2,7 @@ import {
 	isWcConfigured,
 	type Paginated,
 	paginateArray,
+	TTL,
 	type WcEnv,
 	type WcTopic,
 	wcFetch,
@@ -76,10 +77,15 @@ const XP_TOPICS_PER_PAGE = 100;
 async function _getAllTopics(env: WcEnv): Promise<Theme[]> {
 	const topics: WcTopic[] = [];
 	for (let page = 1; ; page++) {
-		const batch = await wcFetch<WcTopic[]>(env, "/xp/topics", {
-			page,
-			per_page: XP_TOPICS_PER_PAGE,
-		});
+		const batch = await wcFetch<WcTopic[]>(
+			env,
+			"/xp/topics",
+			{
+				page,
+				per_page: XP_TOPICS_PER_PAGE,
+			},
+			TTL.M,
+		);
 		topics.push(...batch);
 		if (batch.length < XP_TOPICS_PER_PAGE) break;
 	}
@@ -97,11 +103,16 @@ export async function getThemes(
 			THEMES_PER_PAGE,
 		);
 	}
-	const result = await wcFetchPaginated<WcTopic>(env, "/xp/topics", {
-		parent_id: 0,
-		page,
-		per_page: THEMES_PER_PAGE,
-	});
+	const result = await wcFetchPaginated<WcTopic>(
+		env,
+		"/xp/topics",
+		{
+			parent_id: 0,
+			page,
+			per_page: THEMES_PER_PAGE,
+		},
+		TTL.S,
+	);
 	return {
 		...result,
 		items: result.items.map(mapWcTopic),
@@ -114,9 +125,14 @@ export async function getThemeBySlug(
 ): Promise<Theme | undefined> {
 	if (!isWcConfigured(env))
 		return mockThemes.find((theme) => theme.slug === slug);
-	const result = await wcFetchPaginated<WcTopic>(env, "/xp/topics", {
-		slug,
-		per_page: THEMES_PER_PAGE,
-	});
+	const result = await wcFetchPaginated<WcTopic>(
+		env,
+		"/xp/topics",
+		{
+			slug,
+			per_page: THEMES_PER_PAGE,
+		},
+		TTL.M,
+	);
 	return result.items.map(mapWcTopic).find((theme) => theme.slug === slug);
 }
