@@ -9,7 +9,11 @@
 
 <div class="card bg-base-100 shadow-sm transition-shadow hover:shadow-md">
 	<a href="/product/{product.slug}" class="block">
-		<ProductCardImage src={product.images[0]} alt={product.name} />
+		<div class="block aspect-square overflow-hidden">
+			<figure class="h-full">
+				<ProductCardImage src={product.images[0]} alt={product.name} />
+			</figure>
+		</div>	
 		<div class="card-body gap-2 p-4">
 			<h2 class="line-clamp-2 font-medium overflow-hidden text-ellipsis">{product.name.split(' : ')[0]}</h2>
 			<div class="flex items-center gap-2">
