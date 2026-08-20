@@ -1,3 +1,5 @@
+import { url } from "inspector/promises";
+
 export type WcEnv = {
 	WC_STORE_URL: string;
 	WC_CONSUMER_KEY: string;
@@ -25,11 +27,12 @@ export async function wcFetch<T>(
 	params: Record<string, string | number | boolean | undefined> = {},
 	ttl = 0,
 ): Promise<T> {
-	const url = new URL(`/wp-json/wc/v3${path}`, env.WC_STORE_URL);
+	const prefix = `${env.WC_STORE_URL}/wp-json/wc/v3`;
+	const url = new URL(`${prefix}${path}`, env.WC_STORE_URL);
 	for (const [key, value] of Object.entries(params)) {
 		if (value !== undefined) url.searchParams.set(key, String(value));
 	}
-	const cacheKey = url.toString().slice(env.WC_STORE_URL.length);
+	const cacheKey = url.toString().slice(prefix.length);
 
 	if (ttl > 0) {
 		const cached = await env.XPGIFTS.get<T>(cacheKey, "json");
@@ -78,11 +81,12 @@ export async function wcFetchPaginated<T>(
 	ttl = 0,
 ): Promise<Paginated<T>> {
 	const page = params.page ?? 1;
-	const url = new URL(`/wp-json/wc/v3${path}`, env.WC_STORE_URL);
+	const prefix = `${env.WC_STORE_URL}/wp-json/wc/v3`;
+	const url = new URL(`${prefix}${path}`, env.WC_STORE_URL);
 	for (const [key, value] of Object.entries({ ...params, page })) {
 		if (value !== undefined) url.searchParams.set(key, String(value));
 	}
-	const cacheKey = url.toString().slice(env.WC_STORE_URL.length);
+	const cacheKey = url.toString().slice(prefix.length);
 
 	if (ttl > 0) {
 		const cached = await env.XPGIFTS.get<Paginated<T>>(cacheKey, "json");
