@@ -1,5 +1,3 @@
-import { url } from "inspector/promises";
-
 export type WcEnv = {
 	WC_STORE_URL: string;
 	WC_CONSUMER_KEY: string;

@@ -5,3 +5,7 @@
 		light --default,
 		dark --prefersdark;
 }
+
+.bprogress .bar {
+	background: var(--color-orange-600);
+}
