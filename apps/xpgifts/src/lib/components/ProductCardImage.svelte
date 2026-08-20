@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getWebpContext } from "$lib/stores/webp-context";
 
-	let { src, alt, size = 360, className = "h-full w-full object-cover" }: { src: string; alt: string; size?: number; className?: string } = $props();
+	let { src, alt, size = 360, loading="lazy",	className = "h-full w-full object-cover" }: { src: string; alt: string; size?: number; loading?: string; className?: string } = $props();
 
 	// Format negotiated once server-side from the request's Accept header
 	// (see (storefront)/+layout.server.ts) rather than per-<img>, since a
@@ -18,6 +18,6 @@
 	width={size}
 	height={size}
 	class={className}
-	loading="lazy"
+	loading={loading}
 	decoding="async"
 />
