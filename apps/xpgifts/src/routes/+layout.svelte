@@ -2,7 +2,6 @@
 import { BProgress } from '@bprogress/core';
 import { page } from '$app/state';
 import '@bprogress/core/css';
-import favicon from "$lib/assets/favicon.ico";
 import "./layout.css";
 import { onMount } from 'svelte';
 import { Toaster } from 'svelte-sonner';
@@ -38,7 +37,7 @@ afterNavigate(() => {
 	<meta property="og:title" content={title} />
 	<meta property="og:description" content={description} />
 	<meta name="description" content={description} />
-    <link rel="icon" href={favicon} />
+    <link rel="icon" href="%sveltekit.assets%/favicon.ico" />
 </svelte:head>
 
 <Toaster />
