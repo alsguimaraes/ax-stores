@@ -37,7 +37,6 @@ afterNavigate(() => {
 	<meta property="og:title" content={title} />
 	<meta property="og:description" content={description} />
 	<meta name="description" content={description} />
-    <link rel="icon" href="%sveltekit.assets%/favicon.ico" />
 </svelte:head>
 
 <Toaster />
