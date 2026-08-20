@@ -59,7 +59,7 @@ function mapWcCategory(wc: WcCategory): Category {
 		description: stripHtml(wc.description),
 		image:
 			wc.image?.src ??
-			"https://picsum.photos/seed/xpg-placeholder-category/640/480",
+			"https://media.xpgifts.com/placeholder.png",
 	};
 }
 
@@ -78,7 +78,7 @@ const OTHER_CATEGORY: Category = {
 	slug: "other",
 	name: "Other",
 	description: "Browse all our other gift categories.",
-	image: "https://picsum.photos/seed/xpg-other-categories/640/480",
+	image: "https://media.xpgifts.com/PQMS-XX10897-ALL-PO_TEMP.jpg",
 };
 
 export async function getCategories(

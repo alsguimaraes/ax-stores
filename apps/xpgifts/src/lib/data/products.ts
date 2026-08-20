@@ -276,7 +276,7 @@ function mapWcProduct(wc: WcProduct): Product {
 		images:
 			wc.images.length > 0
 				? wc.images.map((image) => image.src)
-				: ["https://picsum.photos/seed/xpg-placeholder-product/800/800"],
+				: ["https://media.xpgifts.com/placeholder.png"],
 		categorySlug: wc.categories[0]?.slug ?? "",
 		// See src/lib/server/woocommerce.ts WcProduct.tags comment — themes are
 		// assumed to be product tags until confirmed against the real store.
