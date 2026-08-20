@@ -33,7 +33,7 @@ const config = {
 				"frame-src": ["'self'", "https://challenges.cloudflare.com/"],
 				"default-src": ["'self'", "https://challenges.cloudflare.com/"],
 				"media-src": ["'self'", "blob:"],
-				"img-src": ["'self'", "data:", "blob:"],
+				"img-src": ["'self'", "https://media.xpgifts.com/", "data:", "blob:"],
 				"frame-ancestors": ["'self'"],
 				"form-action": ["'self'"],
 				"font-src": ["'self'", "data:"],
