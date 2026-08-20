@@ -23,7 +23,7 @@ const config = {
 		},
 		adapter: adapter({
 			config: "./wrangler.jsonc",
-			// precompress: true,
+			precompress: true,
 		}),
 		csp: {
 			mode: "auto",
