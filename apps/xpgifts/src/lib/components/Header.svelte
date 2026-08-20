@@ -24,7 +24,7 @@
 				<li><a href="/theme">Shop by Theme</a></li>
 			</ul>
 		</div>
-		<a href="/" class="btn btn-ghost text-xl font-bold">xpgifts</a>
+		<a href="/" rel="home"><img width="120" height="40" decoding="async" loading="lazy" src="%sveltekit.assets%/xpgifts-logo.png" alt="xpgifts.com"></a>
 	</div>
 
 	<div class="navbar-center hidden lg:flex">

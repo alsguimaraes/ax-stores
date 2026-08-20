@@ -2,7 +2,7 @@
 import { BProgress } from '@bprogress/core';
 import { page } from '$app/state';
 import '@bprogress/core/css';
-import favicon from "$lib/assets/favicon.svg";
+import favicon from "$lib/assets/favicon.ico";
 import "./layout.css";
 import { onMount } from 'svelte';
 import { Toaster } from 'svelte-sonner';
