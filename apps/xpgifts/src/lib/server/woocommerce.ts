@@ -9,6 +9,7 @@ export const TTL = {
 	S: 90,
 	M: 360,
 	L: 900,
+	XL: 3600,
 };
 // Falls back to mock data (see src/lib/data/*.ts) whenever these aren't set,
 // so local dev works without a real store. Set them in .dev.vars locally and

@@ -117,7 +117,7 @@ export async function getOtherCategories(
 			hide_empty: true,
 			parent: 0,
 		},
-		TTL.M,
+		TTL.XL,
 	);
 	const items = result.items
 		.filter(
@@ -142,7 +142,7 @@ export async function getCategoryBySlug(
 		{
 			slug,
 		},
-		TTL.L,
+		TTL.XL,
 	);
 	return categories[0] ? mapWcCategory(categories[0]) : undefined;
 }
