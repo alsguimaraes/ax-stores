@@ -11,15 +11,17 @@
 	const srcset = sizes.map((size) => `${src}?fit=${size},${size}${format} ${size}w`).join(", ");
 </script>
 
-<figure class="h-full">
-	<img
-		{src}
-		{srcset}
-		{alt}
-		width="360"
-		height="360"
-		class="h-full w-full object-cover"
-		loading="lazy"
-		decoding="async"
-	/>
-</figure>
+<div class="block aspect-square overflow-hidden">
+	<figure class="h-full">
+		<img
+			{src}
+			{srcset}
+			{alt}
+			width="360"
+			height="360"
+			class="h-full w-full object-cover"
+			loading="lazy"
+			decoding="async"
+		/>
+	</figure>
+</div>

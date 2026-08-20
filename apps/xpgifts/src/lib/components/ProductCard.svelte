@@ -8,7 +8,7 @@
 </script>
 
 <div class="card bg-base-100 shadow-sm transition-shadow hover:shadow-md">
-	<a href="/product/{product.slug}" class="block aspect-square overflow-hidden">
+	<a href="/product/{product.slug}" class="block">
 		<ProductCardImage src={product.images[0]} alt={product.name} />
 		<div class="card-body gap-2 p-4">
 			<h2 class="line-clamp-2 font-medium hover:underline">{product.name.split(' : ')[0]}</h2>
