@@ -67,6 +67,56 @@ export async function loginCustomer(
 	}
 }
 
+// Standard, documented WooCommerce REST API v3 endpoint (unlike xp/authorize
+// above) - POST /wc/v3/customers, requiring only `email`. Confirmed against
+// the real store's GET /wp-json/ discovery response (full arg schema, no
+// guessing needed here). On success, logs the new customer straight in via
+// loginCustomer() so registration behaves like login+redirect.
+export async function registerCustomer(
+	env: WcEnv,
+	name: string,
+	email: string,
+	password: string,
+): Promise<{ token: string; user: SessionUser } | { error: string }> {
+	const [firstName, ...rest] = name.trim().split(/\s+/);
+	const lastName = rest.join(" ");
+
+	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
+	const response = await fetch(
+		new URL("/wp-json/wc/v3/customers", env.WC_STORE_URL),
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Basic ${credentials}`,
+				"Content-Type": "application/json",
+				"User-Agent": "XP-RAY",
+			},
+			body: JSON.stringify({
+				email,
+				password,
+				first_name: firstName,
+				last_name: lastName,
+			}),
+		},
+	);
+
+	if (!response.ok) {
+		const body = (await response.json().catch(() => null)) as {
+			message?: string;
+		} | null;
+		return {
+			error:
+				body?.message ?? "Could not create your account. Please try again.",
+		};
+	}
+
+	const result = await loginCustomer(env, email, password);
+	if (!result) {
+		return { error: "Account created - please log in." };
+	}
+	return result;
+}
+
 export async function resolveSession(
 	env: Pick<WcEnv, "XPGIFTS">,
 	token: string,
