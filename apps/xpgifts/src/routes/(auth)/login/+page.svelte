@@ -2,6 +2,7 @@
 	import { enhance } from "$app/forms";
 
 	let { form } = $props();
+	let loading = $state(false);
 </script>
 
 <svelte:head><title>Log In - xpgifts</title></svelte:head>
@@ -12,7 +13,17 @@
 		{#if form?.error}
 			<p class="text-error text-sm">{form.error}</p>
 		{/if}
-		<form method="POST" use:enhance class="contents">
+		<form
+			method="POST"
+			class="contents"
+			use:enhance={() => {
+				loading = true;
+				return async ({ update }) => {
+					await update();
+					loading = false;
+				};
+			}}
+		>
 			<div>
 				<label class="mb-1 block text-sm font-medium" for="email">Email</label>
 				<input
@@ -39,7 +50,9 @@
 					class="input input-bordered w-full"
 				/>
 			</div>
-			<button type="submit" class="btn btn-primary mt-2 w-full">Log In</button>
+			<button type="submit" class="btn btn-primary mt-2 w-full" disabled={loading}>
+				{loading ? "Logging in..." : "Log In"}
+			</button>
 		</form>
 		<div class="divider text-xs">OR</div>
 		<p class="text-center text-sm">
