@@ -2,9 +2,13 @@
 	let { data } = $props();
 </script>
 
-<svelte:head><title>Help / FAQ — xpgifts</title></svelte:head>
+<svelte:head><title>Help / FAQ - xpgifts</title></svelte:head>
 
-<h1 class="mb-6 text-2xl font-bold">Help &amp; FAQ</h1>
+<h1 class="mb-2 text-2xl font-bold">Help &amp; FAQ</h1>
+<p class="mb-6 text-sm opacity-70">
+	Welcome to our Help Center. Browse frequently asked questions by category below - if you don't find what you're
+	looking for, <a href="/contact" class="link">contact us</a>.
+</p>
 
 {#each data.categories as category (category)}
 	<h2 class="mt-6 mb-2 text-lg font-semibold">{category}</h2>

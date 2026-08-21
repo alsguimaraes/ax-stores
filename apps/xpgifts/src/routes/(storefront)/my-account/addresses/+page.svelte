@@ -4,7 +4,7 @@
 	let { data } = $props();
 </script>
 
-<svelte:head><title>Addresses — xpgifts</title></svelte:head>
+<svelte:head><title>Addresses - xpgifts</title></svelte:head>
 
 <div class="mb-6 flex items-center justify-between">
 	<h1 class="text-2xl font-bold">Address Book</h1>

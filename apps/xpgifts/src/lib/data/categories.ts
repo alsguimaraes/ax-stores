@@ -22,7 +22,7 @@ export type Category = {
 const CATEGORIES_PER_PAGE = 24;
 
 // Fallback used when WooCommerce credentials aren't configured (local dev
-// without .dev.vars). Remove once the store is fully wired up — see TODO.md.
+// without .dev.vars). Remove once the store is fully wired up - see TODO.md.
 const mockCategories: Category[] = [
 	{
 		id: 1,
@@ -61,13 +61,13 @@ function mapWcCategory(wc: WcCategory): Category {
 	};
 }
 
-// The real store's top-level taxonomy has ~100 categories — far too many for
-// a nav menu or a home page grid — so navigation/storefront browsing is
+// The real store's top-level taxonomy has ~100 categories - far too many for
+// a nav menu or a home page grid - so navigation/storefront browsing is
 // curated down to these three, plus a catch-all "Other" entry (below) linking
 // to everything else. Use getChildCategories() to drill into a real category.
 const FEATURED_CATEGORY_SLUGS = ["clothing", "living-decor", "arts-crafts"];
 
-// Not a real WooCommerce category — a synthetic entry linking to
+// Not a real WooCommerce category - a synthetic entry linking to
 // /product-category/other, which lists every top-level category not
 // featured above (see getOtherCategories() and its special-cased route).
 const OTHER_CATEGORY: Category = {

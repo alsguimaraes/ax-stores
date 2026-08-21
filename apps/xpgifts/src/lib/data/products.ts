@@ -28,7 +28,7 @@ export type Product = {
 const PRODUCTS_PER_PAGE = 24;
 
 // Fallback used when WooCommerce credentials aren't configured (local dev
-// without .dev.vars). Remove once the store is fully wired up — see TODO.md.
+// without .dev.vars). Remove once the store is fully wired up - see TODO.md.
 const mockProducts: Product[] = [
 	{
 		id: "p1",
@@ -278,7 +278,7 @@ function mapWcProduct(wc: WcProduct): Product {
 				? wc.images.map((image) => image.src)
 				: ["https://media.xpgifts.com/placeholder.png"],
 		categorySlug: wc.categories[0]?.slug ?? "",
-		// See src/lib/server/woocommerce.ts WcProduct.tags comment — themes are
+		// See src/lib/server/woocommerce.ts WcProduct.tags comment - themes are
 		// assumed to be product tags until confirmed against the real store.
 		themeSlugs: wc.tags.map((tag) => tag.slug),
 		rating: Number(wc.average_rating) || 0,

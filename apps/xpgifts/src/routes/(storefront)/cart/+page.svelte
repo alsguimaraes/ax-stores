@@ -7,7 +7,7 @@
 	const subtotal = $derived(cart.items.reduce((sum, item) => sum + item.quantity * item.product.price, 0));
 </script>
 
-<svelte:head><title>Cart — xpgifts</title></svelte:head>
+<svelte:head><title>Cart - xpgifts</title></svelte:head>
 
 <h1 class="mb-6 text-2xl font-bold">Your Cart</h1>
 

@@ -8,7 +8,7 @@
 	const currentStep = $derived(statusStepIndex[data.order.status] ?? -1);
 </script>
 
-<svelte:head><title>Order {data.order.id} — xpgifts</title></svelte:head>
+<svelte:head><title>Order {data.order.id} - xpgifts</title></svelte:head>
 
 <Breadcrumbs items={[{ label: "Orders", href: "/my-account/orders" }, { label: data.order.id }]} />
 

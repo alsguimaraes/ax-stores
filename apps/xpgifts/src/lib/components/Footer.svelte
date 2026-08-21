@@ -24,11 +24,9 @@
 	</nav>
 	<nav>
 		<h6 class="footer-title">Follow Us</h6>
-		<div class="flex gap-4">
-			<a href="https://instagram.com" class="link link-hover" aria-label="Instagram">Instagram</a>
-			<a href="https://facebook.com" class="link link-hover" aria-label="Facebook">Facebook</a>
-			<a href="https://pinterest.com" class="link link-hover" aria-label="Pinterest">Pinterest</a>
-		</div>
+		<a href="https://instagram.com" class="link link-hover" aria-label="Instagram">Instagram</a>
+		<a href="https://facebook.com" class="link link-hover" aria-label="Facebook">Facebook</a>
+		<a href="https://pinterest.com" class="link link-hover" aria-label="Pinterest">Pinterest</a>
 	</nav>
 </footer>
 <footer class="footer bg-base-200 text-base-content border-base-300 border-t px-10 py-4">

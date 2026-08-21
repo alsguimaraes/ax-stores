@@ -6,7 +6,7 @@
 	let { data } = $props();
 </script>
 
-<svelte:head><title>Search{data.query ? `: ${data.query}` : ""} — xpgifts</title></svelte:head>
+<svelte:head><title>Search{data.query ? `: ${data.query}` : ""} - xpgifts</title></svelte:head>
 
 <h1 class="mb-6 text-2xl font-bold">
 	{data.query ? `Search results for "${data.query}"` : "Search"}

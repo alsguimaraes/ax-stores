@@ -1,4 +1,4 @@
-<svelte:head><title>Order Confirmed — xpgifts</title></svelte:head>
+<svelte:head><title>Order Confirmed - xpgifts</title></svelte:head>
 
 <div class="mx-auto flex max-w-lg flex-col items-center gap-4 py-16 text-center">
 	<div class="text-6xl">🎉</div>

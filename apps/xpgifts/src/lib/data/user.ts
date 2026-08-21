@@ -5,7 +5,7 @@ export type User = {
 	avatar: string;
 };
 
-// Mock "logged in" profile — replace with real session data once auth is implemented.
+// Mock "logged in" profile - replace with real session data once auth is implemented.
 export function getCurrentUser(): User {
 	return {
 		id: "user_1",

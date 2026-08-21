@@ -1,15 +1,14 @@
 # Done
-
+- Privacy (see shop safely)
+- Refund
+- About (see follow us)
+- Shipping
+- Terms of Service
+- Contact (see follow us)
 
 # Todo
 
-- About (see follow us)
-- Contact (see follow us)
 - Help
-- Privacy (see shop safely)
-- Refund
-- Shipping
-- Terms of Service
 
 # Deleted
 

@@ -1,9 +1,13 @@
-<svelte:head><title>Contact Us — xpgifts</title></svelte:head>
+<script lang="ts">
+	import CompanyAddress from "$lib/components/CompanyAddress.svelte";
+</script>
+
+<svelte:head><title>Contact Us - xpgifts</title></svelte:head>
 
 <h1 class="mb-6 text-2xl font-bold">Contact Us</h1>
 
-<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-	<div class="card bg-base-100 shadow-sm lg:col-span-2">
+<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+	<div class="card bg-base-100 shadow-sm">
 		<div class="card-body gap-4">
 			<div>
 				<label class="mb-1 block text-sm font-medium" for="name">Name</label>
@@ -28,10 +32,13 @@
 	<div class="card bg-base-200">
 		<div class="card-body gap-2">
 			<h2 class="card-title">Get in Touch</h2>
+			<p class="text-sm">We'd love to hear from you! Let us know how we can help.</p>
 			<p class="text-sm opacity-70">support@xpgifts.com</p>
-			<p class="text-sm opacity-70">Mon–Fri, 9am–5pm ET</p>
+			<p class="text-sm opacity-70">Mon-Fri, 9:00 AM-5:00 PM EST</p>
 			<div class="divider my-1"></div>
-			<p class="text-sm">Have a question about an order? Visit <a href="/help" class="link">Help / FAQ</a> first — you might find a quick answer.</p>
+			<p class="text-sm">Have a question about an order? Visit <a href="/help" class="link">Help / FAQ</a> first - you might find a quick answer.</p>
+			<div class="divider my-1"></div>
+			<CompanyAddress />
 		</div>
 	</div>
 </div>

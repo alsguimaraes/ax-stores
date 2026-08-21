@@ -13,7 +13,7 @@ export const TTL = {
 };
 // Falls back to mock data (see src/lib/data/*.ts) whenever these aren't set,
 // so local dev works without a real store. Set them in .dev.vars locally and
-// via `wrangler secret put` / wrangler.jsonc `vars` in production — see TODO.md.
+// via `wrangler secret put` / wrangler.jsonc `vars` in production - see TODO.md.
 export function isWcConfigured(env: Partial<WcEnv> | undefined): env is WcEnv {
 	return Boolean(
 		env?.WC_STORE_URL && env.WC_CONSUMER_KEY && env.WC_CONSUMER_SECRET,
@@ -133,7 +133,7 @@ export function paginateArray<T>(
 	};
 }
 
-// Minimal shapes for the fields this app actually uses — WooCommerce's real
+// Minimal shapes for the fields this app actually uses - WooCommerce's real
 // responses include many more fields than this.
 export type WcProduct = {
 	id: number;
@@ -145,7 +145,7 @@ export type WcProduct = {
 	on_sale: boolean;
 	images: { src: string }[];
 	categories: { id: number; name: string; slug: string }[];
-	// Assumes "themes" (Birthday, Wedding, etc.) are modeled as product tags —
+	// Assumes "themes" (Birthday, Wedding, etc.) are modeled as product tags -
 	// unconfirmed against the real store, see TODO.md "Themes taxonomy exposure".
 	tags: { id: number; name: string; slug: string }[];
 	average_rating: string;
@@ -163,10 +163,10 @@ export type WcCategory = {
 	image: { src: string } | null;
 };
 
-// Custom endpoint (GET /wc/v3/xp/topics) backing "Shop by Theme" — not part of
+// Custom endpoint (GET /wc/v3/xp/topics) backing "Shop by Theme" - not part of
 // stock WooCommerce REST API v3. Ids/pid come back as numeric strings, there's
 // no description, and it honors page/per_page and parent_id, so the full
-// ~10k-row list only needs paging through in full for slug lookups — see
+// ~10k-row list only needs paging through in full for slug lookups - see
 // getAllTopics in themes.ts.
 export type WcTopic = {
 	id: string;
@@ -185,7 +185,7 @@ const HTML_ENTITIES: Record<string, string> = {
 	"&nbsp;": " ",
 };
 
-// WooCommerce/WordPress return rendered HTML in text fields — strip tags and
+// WooCommerce/WordPress return rendered HTML in text fields - strip tags and
 // decode the common entities so callers get plain text.
 export function stripHtml(html: string): string {
 	const withoutTags = html

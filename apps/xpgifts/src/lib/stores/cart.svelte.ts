@@ -1,7 +1,7 @@
 import type { Product } from "$lib/data/products";
 
 // Snapshots the product at add-time rather than re-deriving it by slug on
-// every render — the cart is client-only state, and product lookups now go
+// every render - the cart is client-only state, and product lookups now go
 // through the (server-only, credentialed) WooCommerce client, so there's no
 // way for the browser to re-fetch product details for a bare slug anyway.
 export type CartItem = {

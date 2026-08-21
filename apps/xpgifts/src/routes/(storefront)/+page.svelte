@@ -5,7 +5,7 @@
 	let { data } = $props();
 </script>
 
-<svelte:head><title>xpgifts — Personalized Gifts for Every Occasion</title></svelte:head>
+<svelte:head><title>xpgifts - Personalized Gifts for Every Occasion</title></svelte:head>
 
 <div class="hero bg-base-200 rounded-box mb-12">
 	<div class="hero-content flex-col py-16 text-center">

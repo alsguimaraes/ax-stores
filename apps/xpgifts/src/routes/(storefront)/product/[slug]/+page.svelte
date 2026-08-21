@@ -11,7 +11,7 @@
 	let activeTab = $state<"description" | "shipping">("description");
 </script>
 
-<svelte:head><title>{data.product.name} — xpgifts</title></svelte:head>
+<svelte:head><title>{data.product.name} - xpgifts</title></svelte:head>
 
 <Breadcrumbs
 	items={[

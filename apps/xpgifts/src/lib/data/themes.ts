@@ -21,7 +21,7 @@ export type Theme = {
 const THEMES_PER_PAGE = 20;
 
 // Fallback used when WooCommerce credentials aren't configured (local dev
-// without .dev.vars). Remove once the store is fully wired up — see TODO.md.
+// without .dev.vars). Remove once the store is fully wired up - see TODO.md.
 const mockThemes: Theme[] = [
 	{
 		id: 1,

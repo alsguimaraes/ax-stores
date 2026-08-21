@@ -1,4 +1,4 @@
-<svelte:head><title>Log In — xpgifts</title></svelte:head>
+<svelte:head><title>Log In - xpgifts</title></svelte:head>
 
 <div class="card bg-base-100 shadow-sm">
 	<div class="card-body gap-3">

@@ -10,7 +10,7 @@ import type { PageServerLoad } from "./$types";
 export const load: PageServerLoad = async ({ params, url, platform }) => {
 	const page = Number(url.searchParams.get("page") ?? "1") || 1;
 
-	// "other" isn't a real WooCommerce category — it's the catch-all nav entry
+	// "other" isn't a real WooCommerce category - it's the catch-all nav entry
 	// (see getCategories()) linking to every top-level category not featured
 	// in the header. Reuses this page's existing "children grid" rendering.
 	if (params.slug === "other") {
@@ -35,7 +35,7 @@ export const load: PageServerLoad = async ({ params, url, platform }) => {
 	if (!category) error(404, "Category not found");
 
 	// Query children unpaginated first (page 1) just to know whether this is a
-	// hub (has subcategories) or a leaf (lists products) — then fetch the
+	// hub (has subcategories) or a leaf (lists products) - then fetch the
 	// requested page of whichever list is actually active.
 	const firstChildPage = await getChildCategories(
 		platform?.env,

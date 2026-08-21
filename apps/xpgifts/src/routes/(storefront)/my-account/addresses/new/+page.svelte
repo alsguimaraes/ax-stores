@@ -1,4 +1,4 @@
-<svelte:head><title>Add Address — xpgifts</title></svelte:head>
+<svelte:head><title>Add Address - xpgifts</title></svelte:head>
 
 <h1 class="mb-6 text-2xl font-bold">Add a New Address</h1>
 

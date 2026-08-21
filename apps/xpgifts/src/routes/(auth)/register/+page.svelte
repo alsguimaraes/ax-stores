@@ -1,4 +1,4 @@
-<svelte:head><title>Create an Account — xpgifts</title></svelte:head>
+<svelte:head><title>Create an Account - xpgifts</title></svelte:head>
 
 <div class="card bg-base-100 shadow-sm">
 	<div class="card-body gap-3">

@@ -5,7 +5,7 @@
 	let { data } = $props();
 </script>
 
-<svelte:head><title>Order History — xpgifts</title></svelte:head>
+<svelte:head><title>Order History - xpgifts</title></svelte:head>
 
 <h1 class="mb-6 text-2xl font-bold">Order History</h1>
 

@@ -6,7 +6,7 @@
 	let { data } = $props();
 </script>
 
-<svelte:head><title>Shop by Theme — xpgifts</title></svelte:head>
+<svelte:head><title>Shop by Theme - xpgifts</title></svelte:head>
 
 <Breadcrumbs items={[{ label: "Shop by Theme" }]} />
 

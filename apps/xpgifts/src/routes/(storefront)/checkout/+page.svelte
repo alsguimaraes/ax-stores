@@ -21,7 +21,7 @@
 	}
 </script>
 
-<svelte:head><title>Checkout — xpgifts</title></svelte:head>
+<svelte:head><title>Checkout - xpgifts</title></svelte:head>
 
 <h1 class="mb-6 text-2xl font-bold">Checkout</h1>
 
@@ -85,7 +85,7 @@
 				<div class="card-body">
 					<h2 class="card-title">Review Your Order</h2>
 					{#if cart.items.length === 0}
-						<p class="opacity-70">Your cart is empty — add something before placing an order.</p>
+						<p class="opacity-70">Your cart is empty - add something before placing an order.</p>
 					{:else}
 						<ul class="divide-base-200 divide-y">
 							{#each cart.items as item (item.product.slug)}
