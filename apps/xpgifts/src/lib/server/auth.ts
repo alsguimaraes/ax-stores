@@ -36,6 +36,7 @@ export async function loginCustomer(
 			body: JSON.stringify({ u: email, p: password }),
 		},
 	);
+	console.log(`loginCustomer(${email}) => ${response.status} ${response.statusText}`);
 	if (!response.ok) return null;
 
 	const data = (await response.json()) as { id: number; name: string };

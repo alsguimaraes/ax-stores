@@ -40,7 +40,11 @@ export async function wcFetch<T>(
 
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(url, {
-		headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/json", "User-Agent": "XP-RAY" },
+		headers: {
+			Authorization: `Basic ${credentials}`,
+			"Content-Type": "application/json",
+			"User-Agent": "XP-RAY",
+		},
 	});
 
 	if (!response.ok) {
@@ -94,7 +98,11 @@ export async function wcFetchPaginated<T>(
 
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(url, {
-		headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/json", "User-Agent": "XP-RAY" },
+		headers: {
+			Authorization: `Basic ${credentials}`,
+			"Content-Type": "application/json",
+			"User-Agent": "XP-RAY",
+		},
 	});
 
 	if (!response.ok) {
