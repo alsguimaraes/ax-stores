@@ -165,12 +165,13 @@ export async function loginCustomer(
 		id: number;
 		firstname: string;
 		lastname: string;
+		verified: string;
 	};
+
+	console.log("loginCustomer response data:", data);
 	if (!data.id) return { status: "invalid" };
 
-	const customer = await getCustomerById(env, data.id);
-	if (!customer) return { status: "invalid" };
-	if (!isVerified(customer)) return { status: "unverified" };
+	if (data.verified !== "yes") return { status: "unverified" };
 
 	const user: SessionUser = {
 		id: String(data.id),
