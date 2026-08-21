@@ -3,8 +3,15 @@
 
 	let { data, form } = $props();
 
+	let activeTab = $state<"billing" | "shipping">("billing");
 	let billingLoading = $state(false);
 	let shippingLoading = $state(false);
+
+	// Switches to whichever tab was just submitted, so the error/success
+	// message from that form action is visible without an extra click.
+	$effect(() => {
+		if (form?.type) activeTab = form.type;
+	});
 
 	let billingValues = $derived(form?.type === "billing" ? form.values : data.addresses.billing);
 	let shippingValues = $derived(
@@ -16,8 +23,25 @@
 
 <h1 class="mb-6 text-2xl font-bold">Address Book</h1>
 
-<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-	<div class="card bg-base-100 shadow-sm">
+<div role="tablist" class="tabs tabs-border max-w-lg">
+	<button
+		role="tab"
+		class="tab {activeTab === 'billing' ? 'tab-active' : ''}"
+		onclick={() => (activeTab = "billing")}
+	>
+		Billing Address
+	</button>
+	<button
+		role="tab"
+		class="tab {activeTab === 'shipping' ? 'tab-active' : ''}"
+		onclick={() => (activeTab = "shipping")}
+	>
+		Shipping Address
+	</button>
+</div>
+
+{#if activeTab === "billing"}
+	<div class="card bg-base-100 max-w-lg shadow-sm">
 		<div class="card-body gap-4">
 			<h2 class="card-title">Billing Address</h2>
 			{#if form?.type === "billing" && form.error}
@@ -168,8 +192,10 @@
 			</form>
 		</div>
 	</div>
+{/if}
 
-	<div class="card bg-base-100 shadow-sm">
+{#if activeTab === "shipping"}
+	<div class="card bg-base-100 max-w-lg shadow-sm">
 		<div class="card-body gap-4">
 			<h2 class="card-title">Shipping Address</h2>
 			{#if form?.type === "shipping" && form.error}
@@ -309,4 +335,4 @@
 			</form>
 		</div>
 	</div>
-</div>
+{/if}

@@ -15,8 +15,13 @@
 		</li>
 	{/each}
 	<li class="border-base-200 mt-2 border-t pt-2">
-		<form method="POST" action="/logout">
-			<button type="submit" class="btn btn-ghost btn-sm w-full justify-start px-3">Logout</button>
+		<form method="POST" action="/logout" class="contents">
+			<button
+				type="submit"
+				class="rounded-field hover:bg-base-content/10 flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-start transition-colors"
+			>
+				Logout
+			</button>
 		</form>
 	</li>
 </ul>
