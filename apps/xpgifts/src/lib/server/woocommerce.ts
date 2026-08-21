@@ -224,6 +224,24 @@ export type WcOrder = {
 	}[];
 };
 
+// Shape of a WooCommerce customer's billing/shipping sub-object - GET/PUT
+// /wc/v3/customers/{id}. `email` is billing-only in WC's own UI, and `phone`
+// was only added to shipping in WC 5.6+, so both are optional here rather
+// than assumed present on every store.
+export type WcAddress = {
+	first_name: string;
+	last_name: string;
+	company: string;
+	address_1: string;
+	address_2: string;
+	city: string;
+	state: string;
+	postcode: string;
+	country: string;
+	email?: string;
+	phone?: string;
+};
+
 const HTML_ENTITIES: Record<string, string> = {
 	"&amp;": "&",
 	"&lt;": "<",

@@ -1,4 +1,4 @@
-import type { WcEnv } from "./woocommerce";
+import type { WcAddress, WcEnv } from "./woocommerce";
 
 export type SessionUser = {
 	id: string;
@@ -21,6 +21,10 @@ export type RegisterResult =
 
 export type UpdateProfileResult =
 	| { status: "ok"; user: SessionUser }
+	| { status: "error"; error: string };
+
+export type UpdateAddressResult =
+	| { status: "ok" }
 	| { status: "error"; error: string };
 
 function escapeHtml(value: string): string {
@@ -325,6 +329,44 @@ export async function updateCustomerProfile(
 		email: customer.email,
 	};
 	return { status: "ok", user };
+}
+
+// PUT /wc/v3/customers/{id} - same endpoint as updateCustomerProfile, but
+// only touches the billing or shipping sub-object. WooCommerce customers have
+// exactly these two addresses (no arbitrary saved-address list), so there's
+// no id/create/delete here - just overwrite one or the other, see
+// getCustomerAddresses in $lib/data/customerAddresses.
+export async function updateCustomerAddress(
+	env: WcEnv,
+	customerId: string,
+	type: "billing" | "shipping",
+	address: WcAddress,
+): Promise<UpdateAddressResult> {
+	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
+	const response = await fetch(
+		new URL(`/wp-json/wc/v3/customers/${customerId}`, env.WC_STORE_URL),
+		{
+			method: "PUT",
+			headers: {
+				Authorization: `Basic ${credentials}`,
+				"Content-Type": "application/json",
+				"User-Agent": "XP-RAY",
+			},
+			body: JSON.stringify({ [type]: address }),
+		},
+	);
+
+	if (!response.ok) {
+		const errBody = (await response.json().catch(() => null)) as {
+			message?: string;
+		} | null;
+		return {
+			status: "error",
+			error:
+				errBody?.message ?? "Could not update your address. Please try again.",
+		};
+	}
+	return { status: "ok" };
 }
 
 // Marks the WC customer verified (meta_data.email_verified = "yes") and logs
