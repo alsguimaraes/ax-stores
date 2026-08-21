@@ -74,6 +74,7 @@
 			<h2 class="card-title">Summary</h2>
 			<div class="flex justify-between text-sm"><span>Subtotal</span><span>${data.order.subtotal.toFixed(2)}</span></div>
 			<div class="flex justify-between text-sm"><span>Shipping</span><span>${data.order.shipping.toFixed(2)}</span></div>
+			<div class="flex justify-between text-sm"><span>Tax</span><span>${data.order.tax.toFixed(2)}</span></div>
 			<div class="divider my-1"></div>
 			<div class="flex justify-between font-semibold"><span>Total</span><span>${data.order.total.toFixed(2)}</span></div>
 			<div class="divider my-1"></div>

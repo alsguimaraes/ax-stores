@@ -196,6 +196,7 @@ export type WcOrder = {
 	date_created: string;
 	customer_id: number;
 	total: string;
+	total_tax: string;
 	shipping_total: string;
 	billing: {
 		address_1: string;

@@ -30,6 +30,7 @@ export type Order = {
 	items: OrderItem[];
 	subtotal: number;
 	shipping: number;
+	tax: number;
 	total: number;
 	shippingAddress: string;
 };
@@ -57,6 +58,7 @@ const mockOrders: Order[] = [
 		],
 		subtotal: 68.97,
 		shipping: 5.99,
+		tax: 0,
 		total: 74.96,
 		shippingAddress: "128 Maple Street, Austin, TX 78701",
 	},
@@ -74,6 +76,7 @@ const mockOrders: Order[] = [
 		],
 		subtotal: 48.99,
 		shipping: 6.99,
+		tax: 0,
 		total: 55.98,
 		shippingAddress: "128 Maple Street, Austin, TX 78701",
 	},
@@ -97,6 +100,7 @@ const mockOrders: Order[] = [
 		],
 		subtotal: 62.98,
 		shipping: 5.99,
+		tax: 0,
 		total: 68.97,
 		shippingAddress: "44 Birchwood Ave, Denver, CO 80203",
 	},
@@ -114,6 +118,7 @@ const mockOrders: Order[] = [
 		],
 		subtotal: 19.99,
 		shipping: 4.99,
+		tax: 0,
 		total: 24.98,
 		shippingAddress: "128 Maple Street, Austin, TX 78701",
 	},
@@ -177,6 +182,7 @@ function mapWcOrder(wc: WcOrder): Order {
 		})),
 		subtotal: wc.line_items.reduce((sum, item) => sum + Number(item.total), 0),
 		shipping: Number(wc.shipping_total),
+		tax: Number(wc.total_tax),
 		total: Number(wc.total),
 		shippingAddress: formatAddress(address),
 	};

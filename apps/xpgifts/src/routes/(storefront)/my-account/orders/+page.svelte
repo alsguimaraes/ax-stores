@@ -21,18 +21,16 @@
 					<th>Status</th>
 					<th>Items</th>
 					<th>Total</th>
-					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each data.orders as order (order.id)}
 					<tr>
-						<td class="font-mono">{order.id}</td>
+						<td class="font-mono"><a href="/my-account/orders/{order.id}" class="link text-sm">{order.id}</a></td>
 						<td>{order.placedAt}</td>
 						<td><OrderStatusBadge status={order.status} /></td>
 						<td>{order.items.reduce((n, i) => n + i.quantity, 0)}</td>
 						<td>${order.total.toFixed(2)}</td>
-						<td><a href="/my-account/orders/{order.id}" class="link text-sm">View</a></td>
 					</tr>
 				{/each}
 			</tbody>
