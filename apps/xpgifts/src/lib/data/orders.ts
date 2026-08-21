@@ -1,7 +1,17 @@
+import {
+	isWcConfigured,
+	stripHtml,
+	TTL,
+	type WcEnv,
+	type WcOrder,
+	wcFetch,
+	wcFetchPaginated,
+} from "$lib/server/woocommerce";
+
 export type OrderStatus = "processing" | "shipped" | "delivered" | "cancelled";
 
 export type OrderItem = {
-	productSlug: string;
+	productSlug?: string;
 	name: string;
 	quantity: number;
 	price: number;
@@ -18,7 +28,9 @@ export type Order = {
 	shippingAddress: string;
 };
 
-const orders: Order[] = [
+// Fallback used when WooCommerce credentials aren't configured (local dev
+// without .dev.vars). Remove once the store is fully wired up - see TODO.md.
+const mockOrders: Order[] = [
 	{
 		id: "XPG-10482",
 		placedAt: "2026-08-01",
@@ -101,10 +113,90 @@ const orders: Order[] = [
 	},
 ];
 
-export function getOrders(): Order[] {
-	return orders;
+// WooCommerce has no "shipped" order status (core statuses are pending,
+// processing, on-hold, completed, cancelled, refunded, failed - confirmed
+// against the real store's GET /wc/v3/orders args schema) and the installed
+// shipment-tracking plugin's data isn't part of the order resource, so
+// "shipped" can't be derived without an extra per-order request. Until that's
+// worth the added complexity, anything short of completed/cancelled shows as
+// "processing" - see TODO.md if that needs revisiting.
+function mapWcOrderStatus(status: string): OrderStatus {
+	if (status === "completed") return "delivered";
+	if (["cancelled", "refunded", "failed", "trash"].includes(status)) {
+		return "cancelled";
+	}
+	return "processing";
 }
 
-export function getOrderById(id: string): Order | undefined {
-	return orders.find((order) => order.id === id);
+function formatAddress(address: WcOrder["shipping"]): string {
+	const line = [address.address_1, address.address_2]
+		.filter(Boolean)
+		.join(", ");
+	const cityState = [address.city, address.state].filter(Boolean).join(", ");
+	return [line, [cityState, address.postcode].filter(Boolean).join(" ")]
+		.filter(Boolean)
+		.join(", ");
+}
+
+function mapWcOrder(wc: WcOrder): Order {
+	// Falls back to billing when shipping is blank (e.g. digital-only orders,
+	// or shipping left empty because it matches billing).
+	const address =
+		wc.shipping.address_1 || wc.shipping.city ? wc.shipping : wc.billing;
+
+	return {
+		id: String(wc.id),
+		placedAt: wc.date_created.slice(0, 10),
+		status: mapWcOrderStatus(wc.status),
+		items: wc.line_items.map((item) => ({
+			name: stripHtml(item.name),
+			quantity: item.quantity,
+			price: Number(item.price),
+		})),
+		subtotal: wc.line_items.reduce((sum, item) => sum + Number(item.total), 0),
+		shipping: Number(wc.shipping_total),
+		total: Number(wc.total),
+		shippingAddress: formatAddress(address),
+	};
+}
+
+export async function getOrders(
+	env: Partial<WcEnv> | undefined,
+	customerId: string,
+): Promise<Order[]> {
+	if (!isWcConfigured(env)) return mockOrders;
+	const result = await wcFetchPaginated<WcOrder>(
+		env,
+		"/orders",
+		{
+			customer: Number(customerId),
+			per_page: 50,
+			orderby: "date",
+			order: "desc",
+		},
+		TTL.S,
+	);
+	return result.items.map(mapWcOrder);
+}
+
+export async function getOrderById(
+	env: Partial<WcEnv> | undefined,
+	customerId: string,
+	id: string,
+): Promise<Order | undefined> {
+	if (!isWcConfigured(env)) return mockOrders.find((order) => order.id === id);
+
+	let wcOrder: WcOrder;
+	try {
+		wcOrder = await wcFetch<WcOrder>(env, `/orders/${id}`, {}, TTL.S);
+	} catch {
+		return undefined;
+	}
+
+	// GET /orders/{id} isn't scoped to a customer - a store-wide API key can
+	// return any order by id, so this ownership check is the only thing
+	// stopping one customer from viewing another's order by guessing its id.
+	if (String(wcOrder.customer_id) !== customerId) return undefined;
+
+	return mapWcOrder(wcOrder);
 }

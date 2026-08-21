@@ -185,6 +185,44 @@ export type WcTopic = {
 	image: string;
 };
 
+// Standard WooCommerce REST API v3 order resource - GET /wc/v3/orders
+// (list, filterable by ?customer={id}) and GET /wc/v3/orders/{id} (single,
+// NOT scoped to a customer - a store-wide API key can fetch any order by id,
+// so callers must verify customer_id themselves before trusting the result,
+// see getOrderById in $lib/data/orders.ts).
+export type WcOrder = {
+	id: number;
+	status: string;
+	date_created: string;
+	customer_id: number;
+	total: string;
+	shipping_total: string;
+	billing: {
+		address_1: string;
+		address_2: string;
+		city: string;
+		state: string;
+		postcode: string;
+		country: string;
+	};
+	shipping: {
+		address_1: string;
+		address_2: string;
+		city: string;
+		state: string;
+		postcode: string;
+		country: string;
+	};
+	line_items: {
+		id: number;
+		name: string;
+		product_id: number;
+		quantity: number;
+		price: number;
+		total: string;
+	}[];
+};
+
 const HTML_ENTITIES: Record<string, string> = {
 	"&amp;": "&",
 	"&lt;": "<",

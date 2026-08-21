@@ -41,9 +41,15 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each data.order.items as item (item.productSlug)}
+				{#each data.order.items as item, i (i)}
 					<tr>
-						<td><a href="/product/{item.productSlug}" class="hover:underline">{item.name}</a></td>
+						<td>
+							{#if item.productSlug}
+								<a href="/product/{item.productSlug}" class="hover:underline">{item.name}</a>
+							{:else}
+								{item.name}
+							{/if}
+						</td>
 						<td>{item.quantity}</td>
 						<td>${item.price.toFixed(2)}</td>
 						<td>${(item.price * item.quantity).toFixed(2)}</td>
