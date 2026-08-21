@@ -1,8 +1,9 @@
 # Todo
 
+- check product titles and split on ' : '
 - edit address, country from dropdown
-- investigate country data from woocommerce rest api
-- minimum, for US use dropdown for states
+- get country data from woocommerce rest api
+- use dropdown for states
 
 # Deleted
 
@@ -23,6 +24,9 @@
 - transaction failed ?
 - reviews
 
+# Sitemaps
+
+- assess and implement one by one
 
 # email
 

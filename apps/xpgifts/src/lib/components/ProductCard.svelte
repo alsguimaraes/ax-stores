@@ -15,7 +15,7 @@
 			</figure>
 		</div>	
 		<div class="card-body gap-2 p-4">
-			<h2 class="line-clamp-2 font-medium overflow-hidden text-ellipsis">{product.name.split(' : ')[0]}</h2>
+			<h2 class="line-clamp-2 font-medium truncate">{product.name.split(' : ')[0]}</h2>
 			<div class="flex items-center gap-2">
 				<span class="text-lg font-semibold">${product.price.toFixed(2)}</span>
 				{#if product.compareAtPrice}
