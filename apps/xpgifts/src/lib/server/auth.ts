@@ -42,19 +42,11 @@ export async function loginCustomer(
 		},
 	);
 	if (!response.ok) {
-		console.log(
-			`loginCustomer(${email}): rejected by backend, HTTP ${response.status}`,
-		);
 		return null;
 	}
 
-	let body = (await response.json()) as unknown;
-	if (typeof body === "string") body = JSON.parse(body);
-	const data = body as { id: number; name: string };
+	const data = (await response.json()) as { id: number; name: string };
 	if (!data.id || !data.name) {
-		console.log(
-			`loginCustomer(${email}): unexpected response shape ${JSON.stringify(data)}`,
-		);
 		return null;
 	}
 
@@ -69,12 +61,8 @@ export async function loginCustomer(
 		await env.XPGIFTS.put(`session:${token}`, JSON.stringify(user), {
 			expirationTtl: SESSION_TTL,
 		});
-		console.log(
-			`loginCustomer(${email}): success, session stored for id=${user.id}`,
-		);
 		return { token, user };
-	} catch (err) {
-		console.log(`loginCustomer(${email}): KV session write failed - ${err}`);
+	} catch {
 		return null;
 	}
 }
