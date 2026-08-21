@@ -39,7 +39,9 @@ export async function loginCustomer(
 	if (!response.ok) return null;
 
 	const data = (await response.json()) as { id: number; name: string };
-	console.log(`loginCustomer(${email}) => ${response.status} ${response.statusText} ${JSON.stringify(data)}`);
+	console.log(
+		`loginCustomer(${email}) => ${response.status} ${response.statusText} ${JSON.stringify(data)}`,
+	);
 	if (!data.id || !data.name) return null;
 
 	const user: SessionUser = {

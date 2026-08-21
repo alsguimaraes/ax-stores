@@ -1,4 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
+import { dev } from "$app/environment";
 import { loginCustomer, SESSION_TTL } from "$lib/server/auth";
 import { isWcConfigured } from "$lib/server/woocommerce";
 import type { Actions } from "./$types";
@@ -24,7 +25,7 @@ export const actions: Actions = {
 		cookies.set("session", result.token, {
 			path: "/",
 			httpOnly: true,
-			secure: true,
+			secure: !dev,
 			sameSite: "lax",
 			maxAge: SESSION_TTL,
 		});
