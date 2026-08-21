@@ -57,9 +57,7 @@ function mapWcCategory(wc: WcCategory): Category {
 		slug: wc.slug,
 		name: stripHtml(wc.name),
 		description: stripHtml(wc.description),
-		image:
-			wc.image?.src ??
-			"https://media.xpgifts.com/placeholder.png",
+		image: wc.image?.src ?? "https://media.xpgifts.com/placeholder.png",
 	};
 }
 
