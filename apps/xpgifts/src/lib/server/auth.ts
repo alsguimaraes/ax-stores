@@ -36,13 +36,20 @@ export async function loginCustomer(
 			body: JSON.stringify({ u: email, p: password }),
 		},
 	);
-	if (!response.ok) return null;
+	if (!response.ok) {
+		console.log(
+			`loginCustomer(${email}): rejected by backend, HTTP ${response.status}`,
+		);
+		return null;
+	}
 
 	const data = (await response.json()) as { id: number; name: string };
-	console.log(
-		`loginCustomer(${email}) => ${response.status} ${response.statusText} ${JSON.stringify(data)}`,
-	);
-	if (!data.id || !data.name) return null;
+	if (!data.id || !data.name) {
+		console.log(
+			`loginCustomer(${email}): unexpected response shape ${JSON.stringify(data)}`,
+		);
+		return null;
+	}
 
 	const user: SessionUser = {
 		id: String(data.id),
@@ -50,12 +57,19 @@ export async function loginCustomer(
 		email,
 	};
 
-	const token = crypto.randomUUID();
-	await env.XPGIFTS.put(`session:${token}`, JSON.stringify(user), {
-		expirationTtl: SESSION_TTL,
-	});
-
-	return { token, user };
+	try {
+		const token = crypto.randomUUID();
+		await env.XPGIFTS.put(`session:${token}`, JSON.stringify(user), {
+			expirationTtl: SESSION_TTL,
+		});
+		console.log(
+			`loginCustomer(${email}): success, session stored for id=${user.id}`,
+		);
+		return { token, user };
+	} catch (err) {
+		console.log(`loginCustomer(${email}): KV session write failed - ${err}`);
+		return null;
+	}
 }
 
 export async function resolveSession(
