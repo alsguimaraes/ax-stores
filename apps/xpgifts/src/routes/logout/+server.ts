@@ -6,5 +6,5 @@ export const POST: RequestHandler = async ({ cookies, platform }) => {
 	const token = cookies.get("session");
 	if (token && platform?.env) await endSession(platform.env, token);
 	cookies.delete("session", { path: "/" });
-	redirect(303, "/login");
+	redirect(303, "/");
 };

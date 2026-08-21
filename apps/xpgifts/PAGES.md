@@ -1,17 +1,8 @@
-# Done
-- Privacy (see shop safely)
-- Refund
-- About (see follow us)
-- Shipping
-- Terms of Service
-- Contact (see follow us)
-- Help
-
 # Todo
 
-- login
-- logout
-- forgot password
+- edit address, country from dropdown
+- investigate country data from woocommerce rest api
+- minimum, for US use dropdown for states
 
 # Deleted
 
