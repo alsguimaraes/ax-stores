@@ -18,6 +18,9 @@ export const actions: Actions = {
 		}
 
 		const result = await loginCustomer(platform.env, email, password);
+		console.log(
+			`login action for ${email} => result: ${JSON.stringify(result)}`,
+		);
 		if (!result) {
 			return fail(400, { error: "Incorrect email or password.", email });
 		}
