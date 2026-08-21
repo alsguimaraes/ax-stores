@@ -4,7 +4,6 @@ export type SessionUser = {
 	id: string;
 	name: string;
 	email: string;
-	avatar: string;
 };
 
 export const SESSION_TTL = 60 * 60 * 24; // 24h - keep in sync with the cookie's maxAge in +page.server.ts.
@@ -46,7 +45,6 @@ export async function loginCustomer(
 		id: String(data.id),
 		name: data.name,
 		email,
-		avatar: `https://i.pravatar.cc/150?u=${encodeURIComponent(email)}`,
 	};
 
 	const token = crypto.randomUUID();
