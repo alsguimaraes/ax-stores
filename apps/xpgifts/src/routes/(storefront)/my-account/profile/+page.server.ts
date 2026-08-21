@@ -1,5 +1,9 @@
 import { fail } from "@sveltejs/kit";
-import { updateCustomerProfile, updateSession } from "$lib/server/auth";
+import {
+	updateCustomerProfile,
+	updateSession,
+	verifyPassword,
+} from "$lib/server/auth";
 import { isWcConfigured } from "$lib/server/woocommerce";
 import type { Actions } from "./$types";
 
@@ -20,8 +24,12 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const firstName = String(data.get("firstName") ?? "").trim();
 		const lastName = String(data.get("lastName") ?? "").trim();
+		const currentPassword = String(data.get("currentPassword") ?? "");
 		const password = String(data.get("password") ?? "");
 		const confirmPassword = String(data.get("confirmPassword") ?? "");
+		const changingPassword = Boolean(
+			currentPassword || password || confirmPassword,
+		);
 
 		if (!firstName || !lastName) {
 			return fail(400, {
@@ -30,10 +38,18 @@ export const actions: Actions = {
 				lastName,
 			});
 		}
-		if (password || confirmPassword) {
+		if (changingPassword) {
+			if (!currentPassword || !password || !confirmPassword) {
+				return fail(400, {
+					error:
+						"Enter your current password and the new password twice to change it.",
+					firstName,
+					lastName,
+				});
+			}
 			if (password !== confirmPassword) {
 				return fail(400, {
-					error: "Passwords do not match.",
+					error: "New passwords do not match.",
 					firstName,
 					lastName,
 				});
@@ -47,12 +63,30 @@ export const actions: Actions = {
 			});
 		}
 
+		if (changingPassword) {
+			// Requiring the current password stops someone with just a
+			// stolen/active session cookie from silently taking over the
+			// account by changing its password.
+			const currentPasswordValid = await verifyPassword(
+				platform.env,
+				locals.user.email,
+				currentPassword,
+			);
+			if (!currentPasswordValid) {
+				return fail(400, {
+					error: "Current password is incorrect.",
+					firstName,
+					lastName,
+				});
+			}
+		}
+
 		const result = await updateCustomerProfile(
 			platform.env,
 			locals.user.id,
 			firstName,
 			lastName,
-			password,
+			changingPassword ? password : "",
 		);
 		if (result.status === "error") {
 			return fail(400, { error: result.error, firstName, lastName });

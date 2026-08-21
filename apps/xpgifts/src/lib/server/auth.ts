@@ -81,7 +81,9 @@ type WcCustomer = {
 function isVerified(customer: Pick<WcCustomer, "meta_data">): boolean {
 	return (
 		customer.meta_data?.some(
-			(meta) => meta.key === "email_verified" && meta.value === "yes" || meta.key === "last_login",
+			(meta) =>
+				(meta.key === "email_verified" && meta.value === "yes") ||
+				meta.key === "last_login",
 		) ?? false
 	);
 }
@@ -132,6 +134,13 @@ async function sendVerificationEmail(
 	});
 }
 
+type AuthorizeResponse = {
+	id: number;
+	firstname: string;
+	lastname: string;
+	verified: string;
+};
+
 // Store-specific customer login - not part of stock WooCommerce REST API v3,
 // same custom "xp/" namespace as WcTopic's /xp/topics endpoint (see
 // woocommerce.ts). The store has no JWT auth plugin installed (confirmed via
@@ -139,16 +148,13 @@ async function sendVerificationEmail(
 // xpgifts' own POST /wc/v3/xp/authorize endpoint instead.
 //
 // Request body is {u, p: password}; on success the response body is
-// {id, firstname, lastname, verified} (id numeric) - confirmed via a direct API test.
-// There's no bearer token in the xp/authorize response either, so we mint our own
-// opaque session token and own the session lifecycle entirely via KV, keyed
-// by that token.
-export async function loginCustomer(
+// {id, firstname, lastname, verified} (id numeric) - confirmed via a direct
+// API test. Returns null on wrong credentials or any non-2xx response.
+async function callAuthorize(
 	env: WcEnv,
 	email: string,
 	password: string,
-): Promise<LoginResult> {
-	console.log(`[login] authorize: attempting for ${email}`);
+): Promise<AuthorizeResponse | null> {
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(
 		new URL("/wp-json/wc/v3/xp/authorize", env.WC_STORE_URL),
@@ -162,23 +168,35 @@ export async function loginCustomer(
 			body: JSON.stringify({ u: email, p: password }),
 		},
 	);
-	console.log(`[login] authorize: HTTP ${response.status}`);
-	if (!response.ok) {
-		console.log(`[login] authorize: rejected, body=${await response.text()}`);
-		return { status: "invalid" };
-	}
+	if (!response.ok) return null;
+	const data = (await response.json()) as AuthorizeResponse;
+	return data.id ? data : null;
+}
 
-	const data = (await response.json()) as {
-		id: number;
-		firstname: string;
-		lastname: string;
-		verified: string;
-	};
+// Confirms a password without creating a session - used to require the
+// current password before allowing a password change (see
+// updateCustomerProfile()), so an attacker with just a stolen/active session
+// cookie can't silently take over the account by changing its password.
+export async function verifyPassword(
+	env: WcEnv,
+	email: string,
+	password: string,
+): Promise<boolean> {
+	return (await callAuthorize(env, email, password)) !== null;
+}
+
+// There's no bearer token in the xp/authorize response, so we mint our own
+// opaque session token and own the session lifecycle entirely via KV, keyed
+// by that token.
+export async function loginCustomer(
+	env: WcEnv,
+	email: string,
+	password: string,
+): Promise<LoginResult> {
+	console.log(`[login] authorize: attempting for ${email}`);
+	const data = await callAuthorize(env, email, password);
 	console.log(`[login] authorize: response=${JSON.stringify(data)}`);
-	if (!data.id) {
-		console.log("[login] authorize: no id in response, treating as invalid");
-		return { status: "invalid" };
-	}
+	if (!data) return { status: "invalid" };
 
 	const verified = data.verified === "yes";
 	console.log(`[login] verification check: verified=${verified}`);

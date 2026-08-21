@@ -5,14 +5,18 @@
 	let { data, form } = $props();
 
 	let loading = $state(false);
+	let currentPassword = $state("");
 	let password = $state("");
 	let confirmPassword = $state("");
+	let changingPassword = $derived(
+		currentPassword.length > 0 || password.length > 0 || confirmPassword.length > 0,
+	);
 	let passwordsMismatch = $derived(
 		password.length > 0 && confirmPassword.length > 0 && password !== confirmPassword,
 	);
 	let passwordIncomplete = $derived(
-		(password.length > 0 || confirmPassword.length > 0) &&
-			(password.length === 0 || confirmPassword.length === 0),
+		changingPassword &&
+			(currentPassword.length === 0 || password.length === 0 || confirmPassword.length === 0),
 	);
 	let canSubmit = $derived(!loading && !passwordsMismatch && !passwordIncomplete);
 </script>
@@ -23,18 +27,6 @@
 
 <div class="card bg-base-100 max-w-lg shadow-sm">
 	<div class="card-body gap-4">
-		<div class="flex items-center gap-4">
-			<div class="avatar">
-				<div class="bg-base-200 flex w-16 items-center justify-center rounded-full">
-					<UserIcon class="h-8 w-8" />
-				</div>
-			</div>
-			<div>
-				<p class="font-medium">{data.user.firstname} {data.user.lastname}</p>
-				<p class="text-sm opacity-70">{data.user.email}</p>
-			</div>
-		</div>
-
 		{#if form?.error}
 			<p class="text-error text-sm">{form.error}</p>
 		{/if}
@@ -50,6 +42,7 @@
 				return async ({ update, result }) => {
 					await update();
 					if (result.type === "success") {
+						currentPassword = "";
 						password = "";
 						confirmPassword = "";
 					}
@@ -92,6 +85,17 @@
 				/>
 			</div>
 			<div>
+				<label class="mb-1 block text-sm font-medium" for="currentPassword">Current Password</label>
+				<input
+					id="currentPassword"
+					name="currentPassword"
+					type="password"
+					bind:value={currentPassword}
+					placeholder="Required to change your password"
+					class="input input-bordered w-full"
+				/>
+			</div>
+			<div>
 				<label class="mb-1 block text-sm font-medium" for="password">New Password</label>
 				<input
 					id="password"
@@ -115,6 +119,10 @@
 				/>
 				{#if passwordsMismatch}
 					<p class="text-error mt-1 text-xs">Passwords do not match.</p>
+				{:else if passwordIncomplete}
+					<p class="text-error mt-1 text-xs">
+						Fill in your current password and the new password twice to change it.
+					</p>
 				{/if}
 			</div>
 			<button type="submit" class="btn btn-primary mt-2 self-start" disabled={!canSubmit}>
