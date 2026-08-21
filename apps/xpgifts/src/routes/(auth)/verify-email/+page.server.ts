@@ -23,5 +23,5 @@ export const load: PageServerLoad = async ({ url, cookies, platform }) => {
 		maxAge: SESSION_TTL,
 	});
 
-	redirect(303, "/my-account");
+	redirect(303, "/");
 };

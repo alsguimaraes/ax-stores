@@ -57,7 +57,7 @@ export const actions: Actions = {
 			maxAge: SESSION_TTL,
 		});
 
-		redirect(303, url.searchParams.get("redirectTo") || "/my-account");
+		redirect(303, url.searchParams.get("redirectTo") || "/");
 	},
 
 	resend: async ({ request, platform, url }) => {
