@@ -45,9 +45,19 @@
 					<tr>
 						<td>
 							{#if item.productSlug}
-								<a href="/product/{item.productSlug}" class="hover:underline">{item.name}</a>
+								<a href="/product/{item.productSlug}" class="flex items-center gap-3 hover:underline">
+									{#if item.image}
+										<img src={item.image} alt={item.name} class="h-12 w-12 rounded object-cover" />
+									{/if}
+									{item.name}
+								</a>
 							{:else}
-								{item.name}
+								<span class="flex items-center gap-3">
+									{#if item.image}
+										<img src={item.image} alt={item.name} class="h-12 w-12 rounded object-cover" />
+									{/if}
+									{item.name}
+								</span>
 							{/if}
 						</td>
 						<td>{item.quantity}</td>

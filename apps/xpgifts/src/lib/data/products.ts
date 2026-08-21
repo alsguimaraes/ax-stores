@@ -424,6 +424,27 @@ export async function getFeaturedProducts(
 	return products.map(mapWcProduct);
 }
 
+// Batches a set of product ids into a single request via WC's `include`
+// filter, rather than fetching each product individually - used to enrich
+// order line items (which only carry a product_id) with slug/image, see
+// my-account/orders/[id]/+page.server.ts.
+export async function getProductsByIds(
+	env: Partial<WcEnv> | undefined,
+	ids: string[],
+): Promise<Product[]> {
+	if (ids.length === 0) return [];
+	if (!isWcConfigured(env)) {
+		return mockProducts.filter((product) => ids.includes(product.id));
+	}
+	const products = await wcFetch<WcProduct[]>(
+		env,
+		"/products",
+		{ include: ids.join(","), per_page: ids.length },
+		TTL.S,
+	);
+	return products.map(mapWcProduct);
+}
+
 export async function getRelatedProducts(
 	env: Partial<WcEnv> | undefined,
 	product: Product,

@@ -11,7 +11,13 @@ import {
 export type OrderStatus = "processing" | "shipped" | "delivered" | "cancelled";
 
 export type OrderItem = {
+	// Set directly for mock orders (see mockOrders below); for live orders WC
+	// line items only carry productId, and productSlug/image get filled in by
+	// the order-detail route after a batched product lookup - see
+	// getProductsByIds in $lib/data/products.ts.
+	productId?: string;
 	productSlug?: string;
+	image?: string;
 	name: string;
 	quantity: number;
 	price: number;
@@ -120,6 +126,21 @@ const mockOrders: Order[] = [
 // "shipped" can't be derived without an extra per-order request. Until that's
 // worth the added complexity, anything short of completed/cancelled shows as
 // "processing" - see TODO.md if that needs revisiting.
+// Real, customer-facing order statuses - excludes "trash" (deleted orders
+// shouldn't be visible to the customer at all) and the internal
+// "auto-draft"/"checkout-draft" states (abandoned/incomplete checkouts, not
+// real orders). Passed explicitly to WC rather than relying on the default
+// `status=any`, whose exact trash-inclusion behavior isn't documented.
+const VISIBLE_ORDER_STATUSES = [
+	"pending",
+	"processing",
+	"on-hold",
+	"completed",
+	"cancelled",
+	"refunded",
+	"failed",
+];
+
 function mapWcOrderStatus(status: string): OrderStatus {
 	if (status === "completed") return "delivered";
 	if (["cancelled", "refunded", "failed", "trash"].includes(status)) {
@@ -149,6 +170,7 @@ function mapWcOrder(wc: WcOrder): Order {
 		placedAt: wc.date_created.slice(0, 10),
 		status: mapWcOrderStatus(wc.status),
 		items: wc.line_items.map((item) => ({
+			productId: String(item.product_id),
 			name: stripHtml(item.name),
 			quantity: item.quantity,
 			price: Number(item.price),
@@ -170,6 +192,7 @@ export async function getOrders(
 		"/orders",
 		{
 			customer: Number(customerId),
+			status: VISIBLE_ORDER_STATUSES.join(","),
 			per_page: 50,
 			orderby: "date",
 			order: "desc",
@@ -197,6 +220,9 @@ export async function getOrderById(
 	// return any order by id, so this ownership check is the only thing
 	// stopping one customer from viewing another's order by guessing its id.
 	if (String(wcOrder.customer_id) !== customerId) return undefined;
+	// Deleted (trashed) orders shouldn't be viewable by direct link either,
+	// same as they're excluded from the list in getOrders().
+	if (!VISIBLE_ORDER_STATUSES.includes(wcOrder.status)) return undefined;
 
 	return mapWcOrder(wcOrder);
 }
