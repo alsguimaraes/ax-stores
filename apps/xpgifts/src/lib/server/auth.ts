@@ -18,6 +18,11 @@ export const SESSION_TTL = 60 * 60 * 24; // 24h - keep in sync with the cookie's
 // body is {id, name} (id numeric) - confirmed. There's no bearer token in the
 // response, so we mint our own opaque session token and own the session
 // lifecycle entirely via KV, keyed by that token.
+//
+// The endpoint double-encodes its JSON response (the body is itself a JSON
+// string containing the {id, name} JSON, rather than the object directly -
+// likely a `json_encode()` on the WP side being passed to `rest_ensure_response()`,
+// which encodes it again) - response.json() below unwraps that extra layer.
 export async function loginCustomer(
 	env: WcEnv,
 	email: string,
@@ -43,7 +48,9 @@ export async function loginCustomer(
 		return null;
 	}
 
-	const data = (await response.json()) as { id: number; name: string };
+	let body = (await response.json()) as unknown;
+	if (typeof body === "string") body = JSON.parse(body);
+	const data = body as { id: number; name: string };
 	if (!data.id || !data.name) {
 		console.log(
 			`loginCustomer(${email}): unexpected response shape ${JSON.stringify(data)}`,
