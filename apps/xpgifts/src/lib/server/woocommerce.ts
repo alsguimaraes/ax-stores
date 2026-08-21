@@ -3,6 +3,7 @@ export type WcEnv = {
 	WC_CONSUMER_KEY: string;
 	WC_CONSUMER_SECRET: string;
 	XPGIFTS: KVNamespace;
+	EMAIL: SendEmail;
 };
 
 export const TTL = {

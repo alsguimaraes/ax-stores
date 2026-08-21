@@ -12,6 +12,17 @@
 		<h1 class="card-title">Log In</h1>
 		{#if form?.error}
 			<p class="text-error text-sm">{form.error}</p>
+			{#if form?.unverified}
+				<form method="POST" action="?/resend" use:enhance>
+					<input type="hidden" name="email" value={form.email} />
+					<button type="submit" class="btn btn-ghost btn-sm">Resend confirmation email</button>
+				</form>
+			{/if}
+		{/if}
+		{#if form?.resent}
+			<p class="text-success text-sm">
+				If that account needs verification, we've sent a new confirmation link to {form.email}.
+			</p>
 		{/if}
 		<form
 			method="POST"

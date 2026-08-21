@@ -31,3 +31,8 @@
 - purchase confirmation ?
 - transaction failed ?
 - reviews
+
+
+# email
+
+npx wrangler email sending enable xpgifts.com

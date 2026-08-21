@@ -1,6 +1,10 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { dev } from "$app/environment";
-import { loginCustomer, SESSION_TTL } from "$lib/server/auth";
+import {
+	loginCustomer,
+	resendVerificationEmail,
+	SESSION_TTL,
+} from "$lib/server/auth";
 import { isWcConfigured } from "$lib/server/woocommerce";
 import type { Actions } from "./$types";
 
@@ -18,7 +22,15 @@ export const actions: Actions = {
 		}
 
 		const result = await loginCustomer(platform.env, email, password);
-		if (!result) {
+		if (result.status === "unverified") {
+			return fail(400, {
+				error:
+					"Please verify your email before logging in - check your inbox for the confirmation link.",
+				email,
+				unverified: true,
+			});
+		}
+		if (result.status !== "ok") {
 			return fail(400, { error: "Incorrect email or password.", email });
 		}
 
@@ -31,5 +43,16 @@ export const actions: Actions = {
 		});
 
 		redirect(303, url.searchParams.get("redirectTo") || "/my-account");
+	},
+
+	resend: async ({ request, platform, url }) => {
+		const data = await request.formData();
+		const email = String(data.get("email") ?? "").trim();
+
+		if (email && isWcConfigured(platform?.env)) {
+			await resendVerificationEmail(platform.env, email, url.origin);
+		}
+
+		return { resent: true, email };
 	},
 };

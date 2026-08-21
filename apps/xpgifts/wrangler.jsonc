@@ -21,6 +21,11 @@
 			"binding": "XPGIFTS",
 			"id": "557128f01edc46d385ababa17e093aea"
 		}
+	],
+	"send_email": [
+		{
+			"name": "EMAIL"
+		}
 	]
 	// WC_CONSUMER_KEY / WC_CONSUMER_SECRET are secrets, not vars - set them via
 	// `.dev.vars` locally and `wrangler secret put` in production. See TODO.md.

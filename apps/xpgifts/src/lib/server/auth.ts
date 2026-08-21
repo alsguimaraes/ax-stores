@@ -7,6 +7,92 @@ export type SessionUser = {
 };
 
 export const SESSION_TTL = 60 * 60 * 24; // 24h - keep in sync with the cookie's maxAge in +page.server.ts.
+const VERIFY_TTL = 60 * 60 * 24; // 24h link expiry.
+
+export type LoginResult =
+	| { status: "ok"; token: string; user: SessionUser }
+	| { status: "unverified" }
+	| { status: "invalid" };
+
+export type RegisterResult =
+	| { status: "pending-verification"; email: string }
+	| { status: "error"; error: string };
+
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+async function createSession(
+	env: Pick<WcEnv, "XPGIFTS">,
+	user: SessionUser,
+): Promise<string | null> {
+	try {
+		const token = crypto.randomUUID();
+		await env.XPGIFTS.put(`session:${token}`, JSON.stringify(user), {
+			expirationTtl: SESSION_TTL,
+		});
+		return token;
+	} catch {
+		return null;
+	}
+}
+
+// Verification status is tracked as WC customer meta (`email_verified`), set
+// once the confirmation link is clicked - see verifyEmailToken(). Absence of
+// the meta key (e.g. a customer created before this feature existed, or one
+// that never verified) is treated as unverified.
+async function isEmailVerified(
+	env: WcEnv,
+	customerId: number,
+): Promise<boolean> {
+	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
+	const response = await fetch(
+		new URL(`/wp-json/wc/v3/customers/${customerId}`, env.WC_STORE_URL),
+		{
+			headers: {
+				Authorization: `Basic ${credentials}`,
+				"User-Agent": "XP-RAY",
+			},
+		},
+	);
+	if (!response.ok) return false;
+
+	const customer = (await response.json()) as {
+		meta_data?: { key: string; value: unknown }[];
+	};
+	return (
+		customer.meta_data?.some(
+			(meta) => meta.key === "email_verified" && meta.value === "yes",
+		) ?? false
+	);
+}
+
+async function sendVerificationEmail(
+	env: WcEnv,
+	customerId: number,
+	name: string,
+	email: string,
+	origin: string,
+): Promise<void> {
+	const token = crypto.randomUUID();
+	await env.XPGIFTS.put(`verify:${token}`, JSON.stringify({ customerId }), {
+		expirationTtl: VERIFY_TTL,
+	});
+
+	const verifyUrl = `${origin}/verify-email?token=${token}`;
+	const safeName = escapeHtml(name);
+	await env.EMAIL.send({
+		to: { email, name },
+		from: { email: "noreply@xpgifts.com", name: "xpgifts" },
+		subject: "Confirm your xpgifts account",
+		html: `<p>Hi ${safeName},</p><p>Thanks for creating an xpgifts account. Please confirm your email address to activate it:</p><p><a href="${verifyUrl}">Confirm your email</a></p><p>This link expires in 24 hours. If you didn't create this account, you can ignore this email.</p>`,
+		text: `Hi ${name},\n\nThanks for creating an xpgifts account. Please confirm your email address to activate it:\n${verifyUrl}\n\nThis link expires in 24 hours. If you didn't create this account, you can ignore this email.`,
+	});
+}
 
 // Store-specific customer login - not part of stock WooCommerce REST API v3,
 // same custom "xp/" namespace as WcTopic's /xp/topics endpoint (see
@@ -18,16 +104,11 @@ export const SESSION_TTL = 60 * 60 * 24; // 24h - keep in sync with the cookie's
 // body is {id, name} (id numeric) - confirmed. There's no bearer token in the
 // response, so we mint our own opaque session token and own the session
 // lifecycle entirely via KV, keyed by that token.
-//
-// The endpoint double-encodes its JSON response (the body is itself a JSON
-// string containing the {id, name} JSON, rather than the object directly -
-// likely a `json_encode()` on the WP side being passed to `rest_ensure_response()`,
-// which encodes it again) - response.json() below unwraps that extra layer.
 export async function loginCustomer(
 	env: WcEnv,
 	email: string,
 	password: string,
-): Promise<{ token: string; user: SessionUser } | null> {
+): Promise<LoginResult> {
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(
 		new URL("/wp-json/wc/v3/xp/authorize", env.WC_STORE_URL),
@@ -41,13 +122,13 @@ export async function loginCustomer(
 			body: JSON.stringify({ u: email, p: password }),
 		},
 	);
-	if (!response.ok) {
-		return null;
-	}
+	if (!response.ok) return { status: "invalid" };
 
 	const data = (await response.json()) as { id: number; name: string };
-	if (!data.id || !data.name) {
-		return null;
+	if (!data.id || !data.name) return { status: "invalid" };
+
+	if (!(await isEmailVerified(env, data.id))) {
+		return { status: "unverified" };
 	}
 
 	const user: SessionUser = {
@@ -56,28 +137,24 @@ export async function loginCustomer(
 		email,
 	};
 
-	try {
-		const token = crypto.randomUUID();
-		await env.XPGIFTS.put(`session:${token}`, JSON.stringify(user), {
-			expirationTtl: SESSION_TTL,
-		});
-		return { token, user };
-	} catch {
-		return null;
-	}
+	const token = await createSession(env, user);
+	if (!token) return { status: "invalid" };
+	return { status: "ok", token, user };
 }
 
 // Standard, documented WooCommerce REST API v3 endpoint (unlike xp/authorize
 // above) - POST /wc/v3/customers, requiring only `email`. Confirmed against
 // the real store's GET /wp-json/ discovery response (full arg schema, no
-// guessing needed here). On success, logs the new customer straight in via
-// loginCustomer() so registration behaves like login+redirect.
+// guessing needed here). Doesn't log the customer in - an unverified account
+// can't authenticate (see isEmailVerified()) until they click the
+// confirmation link sent here, which verifyEmailToken() handles.
 export async function registerCustomer(
 	env: WcEnv,
 	name: string,
 	email: string,
 	password: string,
-): Promise<{ token: string; user: SessionUser } | { error: string }> {
+	origin: string,
+): Promise<RegisterResult> {
 	const [firstName, ...rest] = name.trim().split(/\s+/);
 	const lastName = rest.join(" ");
 
@@ -105,16 +182,112 @@ export async function registerCustomer(
 			message?: string;
 		} | null;
 		return {
+			status: "error",
 			error:
 				body?.message ?? "Could not create your account. Please try again.",
 		};
 	}
 
-	const result = await loginCustomer(env, email, password);
-	if (!result) {
-		return { error: "Account created - please log in." };
-	}
-	return result;
+	const customer = (await response.json()) as { id: number };
+	await sendVerificationEmail(
+		env,
+		customer.id,
+		firstName || name,
+		email,
+		origin,
+	);
+
+	return { status: "pending-verification", email };
+}
+
+// Marks the WC customer verified (meta_data.email_verified = "yes") and logs
+// them straight in. Tokens are single-use (deleted immediately) and expire
+// after VERIFY_TTL.
+export async function verifyEmailToken(
+	env: WcEnv,
+	token: string,
+): Promise<LoginResult> {
+	const record = await env.XPGIFTS.get<{ customerId: number }>(
+		`verify:${token}`,
+		"json",
+	);
+	if (!record) return { status: "invalid" };
+	await env.XPGIFTS.delete(`verify:${token}`);
+
+	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
+	const response = await fetch(
+		new URL(`/wp-json/wc/v3/customers/${record.customerId}`, env.WC_STORE_URL),
+		{
+			method: "PUT",
+			headers: {
+				Authorization: `Basic ${credentials}`,
+				"Content-Type": "application/json",
+				"User-Agent": "XP-RAY",
+			},
+			body: JSON.stringify({
+				meta_data: [{ key: "email_verified", value: "yes" }],
+			}),
+		},
+	);
+	if (!response.ok) return { status: "invalid" };
+
+	const customer = (await response.json()) as {
+		id: number;
+		email: string;
+		first_name?: string;
+		last_name?: string;
+	};
+	const user: SessionUser = {
+		id: String(customer.id),
+		name:
+			[customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
+			customer.email,
+		email: customer.email,
+	};
+
+	const sessionToken = await createSession(env, user);
+	if (!sessionToken) return { status: "invalid" };
+	return { status: "ok", token: sessionToken, user };
+}
+
+// Silently no-ops if the email doesn't match an account or is already
+// verified, rather than reporting which - callers should always show the
+// same generic "if that account needs verification, we've sent a link"
+// message regardless of outcome, to avoid leaking account existence.
+export async function resendVerificationEmail(
+	env: WcEnv,
+	email: string,
+	origin: string,
+): Promise<void> {
+	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
+	const response = await fetch(
+		new URL(
+			`/wp-json/wc/v3/customers?email=${encodeURIComponent(email)}`,
+			env.WC_STORE_URL,
+		),
+		{
+			headers: {
+				Authorization: `Basic ${credentials}`,
+				"User-Agent": "XP-RAY",
+			},
+		},
+	);
+	if (!response.ok) return;
+
+	const customers = (await response.json()) as {
+		id: number;
+		email: string;
+		first_name?: string;
+		last_name?: string;
+	}[];
+	const customer = customers[0];
+	if (!customer) return;
+	if (await isEmailVerified(env, customer.id)) return;
+
+	const name =
+		[customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
+		customer.email;
+	await sendVerificationEmail(env, customer.id, name, customer.email, origin);
 }
 
 export async function resolveSession(

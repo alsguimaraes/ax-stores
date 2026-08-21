@@ -1,11 +1,10 @@
-import { fail, redirect } from "@sveltejs/kit";
-import { dev } from "$app/environment";
-import { registerCustomer, SESSION_TTL } from "$lib/server/auth";
+import { fail } from "@sveltejs/kit";
+import { registerCustomer } from "$lib/server/auth";
 import { isWcConfigured } from "$lib/server/woocommerce";
 import type { Actions } from "./$types";
 
 export const actions: Actions = {
-	default: async ({ request, cookies, platform, url }) => {
+	default: async ({ request, platform, url }) => {
 		const data = await request.formData();
 		const name = String(data.get("name") ?? "").trim();
 		const email = String(data.get("email") ?? "").trim();
@@ -26,19 +25,17 @@ export const actions: Actions = {
 			});
 		}
 
-		const result = await registerCustomer(platform.env, name, email, password);
-		if ("error" in result) {
+		const result = await registerCustomer(
+			platform.env,
+			name,
+			email,
+			password,
+			url.origin,
+		);
+		if (result.status === "error") {
 			return fail(400, { error: result.error, name, email });
 		}
 
-		cookies.set("session", result.token, {
-			path: "/",
-			httpOnly: true,
-			secure: !dev,
-			sameSite: "lax",
-			maxAge: SESSION_TTL,
-		});
-
-		redirect(303, url.searchParams.get("redirectTo") || "/my-account");
+		return { pendingVerification: true, email: result.email };
 	},
 };
