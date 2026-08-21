@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { untrack } from "svelte";
 	import { enhance } from "$app/forms";
 
 	let { form } = $props();
 	let loading = $state(false);
+	let email = $state(untrack(() => form?.email ?? ""));
+	let confirmEmail = $state("");
+	let emailsMismatch = $derived(confirmEmail.length > 0 && email !== confirmEmail);
 </script>
 
 <svelte:head><title>Create an Account - xpgifts</title></svelte:head>
@@ -32,17 +36,31 @@
 					};
 				}}
 			>
-				<div>
-					<label class="mb-1 block text-sm font-medium" for="name">Full Name</label>
-					<input
-						id="name"
-						name="name"
-						type="text"
-						required
-						value={form?.name ?? ""}
-						placeholder="Jamie Rivera"
-						class="input input-bordered w-full"
-					/>
+				<div class="grid grid-cols-2 gap-3">
+					<div>
+						<label class="mb-1 block text-sm font-medium" for="firstName">First Name</label>
+						<input
+							id="firstName"
+							name="firstName"
+							type="text"
+							required
+							value={form?.firstName ?? ""}
+							placeholder="Jamie"
+							class="input input-bordered w-full"
+						/>
+					</div>
+					<div>
+						<label class="mb-1 block text-sm font-medium" for="lastName">Last Name</label>
+						<input
+							id="lastName"
+							name="lastName"
+							type="text"
+							required
+							value={form?.lastName ?? ""}
+							placeholder="Rivera"
+							class="input input-bordered w-full"
+						/>
+					</div>
 				</div>
 				<div>
 					<label class="mb-1 block text-sm font-medium" for="email">Email</label>
@@ -51,10 +69,26 @@
 						name="email"
 						type="email"
 						required
-						value={form?.email ?? ""}
+						bind:value={email}
 						placeholder="you@example.com"
 						class="input input-bordered w-full"
 					/>
+				</div>
+				<div>
+					<label class="mb-1 block text-sm font-medium" for="confirmEmail">Confirm Email</label>
+					<input
+						id="confirmEmail"
+						name="confirmEmail"
+						type="email"
+						required
+						bind:value={confirmEmail}
+						placeholder="you@example.com"
+						class="input input-bordered w-full"
+						class:input-error={emailsMismatch}
+					/>
+					{#if emailsMismatch}
+						<p class="text-error mt-1 text-xs">Emails do not match.</p>
+					{/if}
 				</div>
 				<div>
 					<label class="mb-1 block text-sm font-medium" for="password">Password</label>
@@ -67,7 +101,11 @@
 						class="input input-bordered w-full"
 					/>
 				</div>
-				<button type="submit" class="btn btn-primary mt-2 w-full" disabled={loading}>
+				<button
+					type="submit"
+					class="btn btn-primary mt-2 w-full"
+					disabled={loading || emailsMismatch || !confirmEmail}
+				>
 					{loading ? "Creating account..." : "Create Account"}
 				</button>
 			</form>

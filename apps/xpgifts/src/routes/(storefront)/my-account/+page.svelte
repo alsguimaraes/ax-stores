@@ -6,7 +6,7 @@
 
 <svelte:head><title>My Account - xpgifts</title></svelte:head>
 
-<h1 class="mb-1 text-2xl font-bold">Welcome back, {data.user.name.split(" ")[0]}</h1>
+<h1 class="mb-1 text-2xl font-bold">Welcome back, {data.user.firstname}</h1>
 <p class="mb-6 opacity-70">Here's what's happening with your account.</p>
 
 <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">

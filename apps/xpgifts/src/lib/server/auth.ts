@@ -2,7 +2,8 @@ import type { WcEnv } from "./woocommerce";
 
 export type SessionUser = {
 	id: string;
-	name: string;
+	firstname: string;
+	lastname: string;
 	email: string;
 };
 
@@ -41,14 +42,53 @@ async function createSession(
 	}
 }
 
+type WcCustomer = {
+	id: number;
+	email: string;
+	username?: string;
+	first_name?: string;
+	last_name?: string;
+	meta_data?: { key: string; value: unknown }[];
+};
+
 // Verification status is tracked as WC customer meta (`email_verified`), set
 // once the confirmation link is clicked - see verifyEmailToken(). Absence of
 // the meta key (e.g. a customer created before this feature existed, or one
 // that never verified) is treated as unverified.
-async function isEmailVerified(
+function isVerified(customer: Pick<WcCustomer, "meta_data">): boolean {
+	return (
+		customer.meta_data?.some(
+			(meta) => meta.key === "email_verified" && meta.value === "yes",
+		) ?? false
+	);
+}
+
+async function findCustomerByEmail(
+	env: WcEnv,
+	email: string,
+): Promise<WcCustomer | null> {
+	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
+	const response = await fetch(
+		new URL(
+			`/wp-json/wc/v3/customers?email=${encodeURIComponent(email)}`,
+			env.WC_STORE_URL,
+		),
+		{
+			headers: {
+				Authorization: `Basic ${credentials}`,
+				"User-Agent": "XP-RAY",
+			},
+		},
+	);
+	if (!response.ok) return null;
+	const customers = (await response.json()) as WcCustomer[];
+	return customers[0] ?? null;
+}
+
+async function getCustomerById(
 	env: WcEnv,
 	customerId: number,
-): Promise<boolean> {
+): Promise<WcCustomer | null> {
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(
 		new URL(`/wp-json/wc/v3/customers/${customerId}`, env.WC_STORE_URL),
@@ -59,22 +99,15 @@ async function isEmailVerified(
 			},
 		},
 	);
-	if (!response.ok) return false;
-
-	const customer = (await response.json()) as {
-		meta_data?: { key: string; value: unknown }[];
-	};
-	return (
-		customer.meta_data?.some(
-			(meta) => meta.key === "email_verified" && meta.value === "yes",
-		) ?? false
-	);
+	if (!response.ok) return null;
+	return (await response.json()) as WcCustomer;
 }
 
 async function sendVerificationEmail(
 	env: WcEnv,
 	customerId: number,
-	name: string,
+	firstname: string,
+	lastname: string,
 	email: string,
 	origin: string,
 ): Promise<void> {
@@ -84,13 +117,13 @@ async function sendVerificationEmail(
 	});
 
 	const verifyUrl = `${origin}/verify-email?token=${token}`;
-	const safeName = escapeHtml(name);
+	const safeName = escapeHtml(`${firstname} ${lastname}`);
 	await env.EMAIL.send({
-		to: { email, name },
+		to: { email, name: `${firstname} ${lastname}` },
 		from: { email: "noreply@xpgifts.com", name: "xpgifts" },
 		subject: "Confirm your xpgifts account",
 		html: `<p>Hi ${safeName},</p><p>Thanks for creating an xpgifts account. Please confirm your email address to activate it:</p><p><a href="${verifyUrl}">Confirm your email</a></p><p>This link expires in 24 hours. If you didn't create this account, you can ignore this email.</p>`,
-		text: `Hi ${name},\n\nThanks for creating an xpgifts account. Please confirm your email address to activate it:\n${verifyUrl}\n\nThis link expires in 24 hours. If you didn't create this account, you can ignore this email.`,
+		text: `Hi ${firstname} ${lastname},\n\nThanks for creating an xpgifts account. Please confirm your email address to activate it:\n${verifyUrl}\n\nThis link expires in 24 hours. If you didn't create this account, you can ignore this email.`,
 	});
 }
 
@@ -100,10 +133,14 @@ async function sendVerificationEmail(
 // GET /wp-json/ root discovery - no jwt-auth/v1 namespace), so this hits
 // xpgifts' own POST /wc/v3/xp/authorize endpoint instead.
 //
-// Request body is {u: username/email, p: password}; on success the response
-// body is {id, name} (id numeric) - confirmed. There's no bearer token in the
-// response, so we mint our own opaque session token and own the session
-// lifecycle entirely via KV, keyed by that token.
+// Request body is {u, p: password}; on success the response body is
+// {id, firstname, lastname} (id numeric) - confirmed. There's no bearer
+// token in the response, so we mint our own opaque session token and own
+// the session lifecycle entirely via KV, keyed by that token.
+//
+// Verification status still requires a separate customer lookup (WC customer
+// meta_data isn't part of this response), which doubles as the "does this
+// account exist" check.
 export async function loginCustomer(
 	env: WcEnv,
 	email: string,
@@ -124,16 +161,21 @@ export async function loginCustomer(
 	);
 	if (!response.ok) return { status: "invalid" };
 
-	const data = (await response.json()) as { id: number; name: string };
-	if (!data.id || !data.name) return { status: "invalid" };
+	const data = (await response.json()) as {
+		id: number;
+		firstname: string;
+		lastname: string;
+	};
+	if (!data.id) return { status: "invalid" };
 
-	if (!(await isEmailVerified(env, data.id))) {
-		return { status: "unverified" };
-	}
+	const customer = await getCustomerById(env, data.id);
+	if (!customer) return { status: "invalid" };
+	if (!isVerified(customer)) return { status: "unverified" };
 
 	const user: SessionUser = {
 		id: String(data.id),
-		name: data.name,
+		firstname: data.firstname,
+		lastname: data.lastname,
 		email,
 	};
 
@@ -146,18 +188,16 @@ export async function loginCustomer(
 // above) - POST /wc/v3/customers, requiring only `email`. Confirmed against
 // the real store's GET /wp-json/ discovery response (full arg schema, no
 // guessing needed here). Doesn't log the customer in - an unverified account
-// can't authenticate (see isEmailVerified()) until they click the
-// confirmation link sent here, which verifyEmailToken() handles.
+// can't authenticate (see isVerified()) until they click the confirmation
+// link sent here, which verifyEmailToken() handles.
 export async function registerCustomer(
 	env: WcEnv,
-	name: string,
+	firstName: string,
+	lastName: string,
 	email: string,
 	password: string,
 	origin: string,
 ): Promise<RegisterResult> {
-	const [firstName, ...rest] = name.trim().split(/\s+/);
-	const lastName = rest.join(" ");
-
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(
 		new URL("/wp-json/wc/v3/customers", env.WC_STORE_URL),
@@ -192,7 +232,8 @@ export async function registerCustomer(
 	await sendVerificationEmail(
 		env,
 		customer.id,
-		firstName || name,
+		firstName,
+		lastName,
 		email,
 		origin,
 	);
@@ -231,17 +272,11 @@ export async function verifyEmailToken(
 	);
 	if (!response.ok) return { status: "invalid" };
 
-	const customer = (await response.json()) as {
-		id: number;
-		email: string;
-		first_name?: string;
-		last_name?: string;
-	};
+	const customer = (await response.json()) as WcCustomer;
 	const user: SessionUser = {
 		id: String(customer.id),
-		name:
-			[customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
-			customer.email,
+		firstname: customer.first_name ?? "",
+		lastname: customer.last_name ?? "",
 		email: customer.email,
 	};
 
@@ -259,35 +294,18 @@ export async function resendVerificationEmail(
 	email: string,
 	origin: string,
 ): Promise<void> {
-	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
-	const response = await fetch(
-		new URL(
-			`/wp-json/wc/v3/customers?email=${encodeURIComponent(email)}`,
-			env.WC_STORE_URL,
-		),
-		{
-			headers: {
-				Authorization: `Basic ${credentials}`,
-				"User-Agent": "XP-RAY",
-			},
-		},
-	);
-	if (!response.ok) return;
-
-	const customers = (await response.json()) as {
-		id: number;
-		email: string;
-		first_name?: string;
-		last_name?: string;
-	}[];
-	const customer = customers[0];
+	const customer = await findCustomerByEmail(env, email);
 	if (!customer) return;
-	if (await isEmailVerified(env, customer.id)) return;
+	if (isVerified(customer)) return;
 
-	const name =
-		[customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
-		customer.email;
-	await sendVerificationEmail(env, customer.id, name, customer.email, origin);
+	await sendVerificationEmail(
+		env,
+		customer.id,
+		customer.first_name ?? "",
+		customer.last_name ?? "",
+		customer.email,
+		origin,
+	);
 }
 
 export async function resolveSession(

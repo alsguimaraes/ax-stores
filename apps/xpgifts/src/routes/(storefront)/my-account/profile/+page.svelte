@@ -17,14 +17,30 @@
 				</div>
 			</div>
 			<div>
-				<p class="font-medium">{data.user.name}</p>
+				<p class="font-medium">{data.user.firstname} {data.user.lastname}</p>
 				<p class="text-sm opacity-70">{data.user.email}</p>
 			</div>
 		</div>
 
-		<div>
-			<label class="mb-1 block text-sm font-medium" for="name">Full Name</label>
-			<input id="name" type="text" value={data.user.name} class="input input-bordered w-full" />
+		<div class="grid grid-cols-2 gap-3">
+			<div>
+				<label class="mb-1 block text-sm font-medium" for="firstName">First Name</label>
+				<input
+					id="firstName"
+					type="text"
+					value={data.user.firstname}
+					class="input input-bordered w-full"
+				/>
+			</div>
+			<div>
+				<label class="mb-1 block text-sm font-medium" for="lastName">Last Name</label>
+				<input
+					id="lastName"
+					type="text"
+					value={data.user.lastname}
+					class="input input-bordered w-full"
+				/>
+			</div>
 		</div>
 		<div>
 			<label class="mb-1 block text-sm font-medium" for="email">Email</label>
