@@ -47,7 +47,7 @@
 				class="input input-bordered input-sm w-40 md:w-56"
 			/>
 		</form>
-		<a href="/my-account" class="btn btn-ghost btn-circle" aria-label="Account">
+		<a href="/my-account/profile" class="btn btn-ghost btn-circle" aria-label="Account">
 			<UserIcon />
 		</a>
 		<a href="/cart" class="btn btn-ghost btn-circle" aria-label="Cart">
