@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CompanyAddress from "$lib/components/CompanyAddress.svelte";
+	import EmailLink from "$lib/components/EmailLink.svelte";
 </script>
 
 <svelte:head><title>Contact Us - xpgifts</title></svelte:head>
@@ -33,11 +34,8 @@
 		<div class="card-body gap-2">
 			<h2 class="card-title">Get in Touch</h2>
 			<p class="text-sm">We'd love to hear from you! Let us know how we can help.</p>
-			<p class="text-sm opacity-70">support@xpgifts.com</p>
-			<p class="text-sm opacity-70">Mon-Fri, 9:00 AM-5:00 PM EST</p>
-			<div class="divider my-1"></div>
+			<p class="text-sm opacity-70"><EmailLink /></p>
 			<p class="text-sm">Have a question about an order? Visit <a href="/help" class="link">Help / FAQ</a> first - you might find a quick answer.</p>
-			<div class="divider my-1"></div>
 			<CompanyAddress />
 		</div>
 	</div>
