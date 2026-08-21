@@ -5,10 +5,13 @@
 - Shipping
 - Terms of Service
 - Contact (see follow us)
+- Help
 
 # Todo
 
-- Help
+- login
+- logout
+- forgot password
 
 # Deleted
 

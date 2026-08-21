@@ -25,15 +25,16 @@ All product/category/order/address/etc. data currently comes from static arrays 
 - [ ] **`addresses.ts`** → also blocked on auth. WC doesn't have a standalone "addresses" resource - billing/shipping addresses live on the `customers/{id}` object, and a customer can really only have one of each (not a list). This is a data-model mismatch with the current `Address[]` "address book" UI (`/my-account/addresses`, `/my-account/addresses/new`, `/.../edit`) - decide whether to (a) collapse the address book UI down to WC's single-billing/single-shipping model, or (b) keep a multi-address book in our own storage (D1) and only sync the "default" one to WC at checkout time.
 - [ ] **`wishlist.ts`** → not a WooCommerce REST API v3 concept at all. Either requires a wishlist plugin with its own REST endpoints (e.g. YITH WooCommerce Wishlist has an undocumented/limited REST surface - verify), or store wishlist state ourselves (D1 table keyed by customer ID). Recommend the latter unless a wishlist plugin is already installed on the target store.
 - [ ] **`faq.ts`** → out of scope for WooCommerce entirely; this is just editorial content. Leave as static data, or move to WP pages/custom fields via the generic `wp/v2` REST API if the content should be editable without a redeploy. Not urgent.
-- [ ] **`user.ts` / auth** → blocked on the auth decision below; `getCurrentUser()` becomes "read the authenticated session" rather than a WC call per se.
+- [x] **`user.ts` / auth** → done. `src/lib/data/user.ts` (mock `getCurrentUser()`) was deleted; `locals.user` (from `src/lib/server/auth.ts` + `hooks.server.ts`) is now the source of truth, exposed to `my-account/*` via `+layout.server.ts`.
 
 ## Open decisions (need answers before orders/addresses/wishlist/auth work starts)
 
-1. **Customer authentication strategy.** REST API v3 consumer key/secret auth is store-wide admin access - it has no concept of "log this shopper in." Options:
-   - A JWT auth plugin on the WP backend (e.g. "JWT Authentication for WP REST API") issuing per-customer tokens from `/login`.
-   - WooCommerce's separate **Store API** (`/wp-json/wc/store/v1/`), designed for headless storefronts, with nonce/cart-token based customer session support - different from REST API v3, would need its own client alongside `woocommerce.ts`.
-   - A fully custom auth layer (our own session cookie + Cloudflare D1 users table) that's merely *linked* to a WC customer ID for order/address lookups.
-   Pick one before touching `/login`, `/register`, `/my-account/*`.
+1. ~~**Customer authentication strategy.**~~ **Resolved:** no JWT auth plugin is installed on the store (confirmed via `GET /wp-json/` root discovery - no `jwt-auth/v1` namespace). The store instead exposes its own custom login API under the same `xp/` namespace as `xp/topics` (see `WcTopic`): `POST /wc/v3/xp/authorize` (request body confirmed as `{u: <email>, p: <password>}`), plus `/wc/v3/xp/auth_account` and `/wc/v3/xp/auth_sessions` (GET/POST/DELETE, contract not yet explored). Implemented in `src/lib/server/auth.ts`:
+   - `loginCustomer()` calls `xp/authorize` (Basic auth with the store consumer key/secret, same as `wcFetch`). Success response is confirmed as `{id, name}` (id numeric) - no bearer token is returned, so the app mints its own opaque session token and stores the resolved profile in KV (`XPGIFTS`) keyed by it, avoiding any need to guess the `auth_account`/`auth_sessions` contract for session lookups.
+   - Session cookie is httpOnly/secure, 24h TTL, resolved each request via `hooks.server.ts`'s `authHandler` → `event.locals.user`.
+   - `my-account/+layout.server.ts` now redirects to `/login` when `locals.user` is unset (the TODO guard is real).
+   - `/logout` (`+server.ts`, POST) clears the cookie + KV record.
+   - Not yet wired: `/register` and `/forgot-password` are still static mockups - only `/login` was in scope for this pass.
 2. **Cart/checkout strategy.** Keep the current per-request Svelte-context cart (`src/lib/stores/cart-context.ts`) and only call WC's `POST /wp-json/wc/v3/orders` at the moment of checkout completion (cart itself stays client-side, never synced mid-session) - vs. adopting the WooCommerce Store API's server-side cart entirely. The former is less work and fits what's already built; recommend that unless there's a reason (e.g. real-time stock/price sync) to need the latter.
 3. **Wishlist plugin?** Confirm whether the target WooCommerce store has one installed before deciding between "call its API" and "build our own."
 4. **Themes taxonomy exposure** (see `themes.ts` above) - needs a look at the actual WP backend/REST API schema (`GET /wp-json/wc/v3` or `/wp-json` root discovery response lists available routes).
@@ -45,7 +46,7 @@ All product/category/order/address/etc. data currently comes from static arrays 
 2. Type adapters for product/category (the two resources with no open decisions blocking them).
 3. Swap `products.ts` and `categories.ts` accessors to live calls; convert their callers' `+page.ts` → `+page.server.ts`; verify `/`, `/shop`, `/product-category/[slug]`, `/product/[slug]`, `/search` against the real store.
 4. Resolve **Open Decision 1** (auth) and **Decision 4** (themes taxonomy) - these gate most of what's left.
-5. Auth: `/login`, `/register`, `/forgot-password` wired to the chosen strategy; `my-account/+layout.server.ts`'s TODO guard becomes real.
+5. Auth: `/login` wired to `xp/authorize` (done - see Open Decision 1); `/register` and `/forgot-password` still need their own endpoints found/confirmed and wiring; `my-account/+layout.server.ts`'s TODO guard is real now.
 6. Orders: live `orders.ts`, with the customer-ownership check called out above.
 7. Addresses: implement whichever model was chosen in Decision 2/the addresses bullet above.
 8. Wishlist: plugin integration or D1-backed implementation per Decision 3.

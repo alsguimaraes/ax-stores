@@ -16,7 +16,9 @@ declare global {
 		}
 
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			user: import("$lib/server/auth").SessionUser | null;
+		}
 		// interface PageData {}
 		// interface PageState {}
 	}

@@ -1,5 +1,6 @@
 import type { Handle, HandleServerError } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
+import { resolveSession } from "$lib/server/auth";
 
 const securityHeaders = {
 	"Permissions-Policy": "geolocation=(self), microphone=(), camera=()",
@@ -14,6 +15,15 @@ const securityHeaders = {
 	"X-Frame-Options": "SAMEORIGIN",
 	"X-Permitted-Cross-Domain-Policies": "none",
 	"X-XSS-Protection": "0",
+};
+
+export const authHandler: Handle = async ({ event, resolve }) => {
+	const token = event.cookies.get("session");
+	event.locals.user =
+		token && event.platform?.env
+			? await resolveSession(event.platform.env, token)
+			: null;
+	return resolve(event);
 };
 
 export const vcHandler: Handle = async ({ event, resolve }) => {
@@ -37,7 +47,7 @@ export const vcHandler: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle = sequence(vcHandler);
+export const handle = sequence(authHandler, vcHandler);
 
 export const handleError: HandleServerError = async ({
 	error,
