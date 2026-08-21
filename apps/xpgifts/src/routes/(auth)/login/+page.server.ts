@@ -8,35 +8,24 @@ import {
 import { isWcConfigured } from "$lib/server/woocommerce";
 import type { Actions } from "./$types";
 
+// SvelteKit forbids mixing a `default` action with named actions in the same
+// file - this must be named (not `default`) because `resend` also lives
+// here. See login/+page.svelte's form action="?/login".
 export const actions: Actions = {
-	default: async ({ request, cookies, platform, url }) => {
-		console.log("[login action] step 1: received form submission");
+	login: async ({ request, cookies, platform, url }) => {
 		const data = await request.formData();
 		const email = String(data.get("email") ?? "").trim();
 		const password = String(data.get("password") ?? "");
-		console.log(
-			`[login action] step 2: parsed email=${email} passwordLength=${password.length}`,
-		);
 
 		if (!email || !password) {
-			console.log("[login action] step 2 FAILED: missing email or password");
 			return fail(400, { error: "Enter your email and password.", email });
 		}
-		const wcConfigured = isWcConfigured(platform?.env);
-		console.log(`[login action] step 3: isWcConfigured=${wcConfigured}`);
-		if (!wcConfigured) {
-			console.log("[login action] step 3 FAILED: WooCommerce not configured");
+		if (!isWcConfigured(platform?.env)) {
 			return fail(500, { error: "Login is unavailable right now.", email });
 		}
 
-		console.log("[login action] step 4: calling loginCustomer()");
 		const result = await loginCustomer(platform.env, email, password);
-		console.log(
-			`[login action] step 5: loginCustomer() result status=${result.status}`,
-		);
-
 		if (result.status === "unverified") {
-			console.log("[login action] step 5 FAILED: account not verified");
 			return fail(400, {
 				error:
 					"Please verify your email before logging in - check your inbox for the confirmation link.",
@@ -45,13 +34,9 @@ export const actions: Actions = {
 			});
 		}
 		if (result.status !== "ok") {
-			console.log("[login action] step 5 FAILED: invalid credentials");
 			return fail(400, { error: "Incorrect email or password.", email });
 		}
 
-		console.log(
-			`[login action] step 6: setting session cookie, secure=${!dev}`,
-		);
 		cookies.set("session", result.token, {
 			path: "/",
 			httpOnly: true,
@@ -60,9 +45,7 @@ export const actions: Actions = {
 			maxAge: SESSION_TTL,
 		});
 
-		const redirectTo = url.searchParams.get("redirectTo") || "/my-account";
-		console.log(`[login action] step 7: redirecting to ${redirectTo}`);
-		redirect(303, redirectTo);
+		redirect(303, url.searchParams.get("redirectTo") || "/my-account");
 	},
 
 	resend: async ({ request, platform, url }) => {

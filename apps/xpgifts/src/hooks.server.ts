@@ -55,7 +55,14 @@ export const handleError: HandleServerError = async ({
 	status,
 	message,
 }) => {
-	console.error(error, event, status, message);
+	// Log the route id and a formatted error rather than the full event
+	// object - event.platform.env holds opaque native bindings (KVNamespace,
+	// SendEmail) that don't stringify usefully and are best kept out of logs.
+	const detail =
+		error instanceof Error
+			? `${error.name}: ${error.message}\n${error.stack}`
+			: String(error);
+	console.error("[handleError]", status, message, event.route?.id, detail);
 	// Report error and send event for extra context
 	// Sentry.captureException(error, {
 	// 	extra: { event, status }

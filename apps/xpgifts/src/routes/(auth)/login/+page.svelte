@@ -26,6 +26,7 @@
 		{/if}
 		<form
 			method="POST"
+			action="?/login"
 			class="contents"
 			use:enhance={() => {
 				loading = true;

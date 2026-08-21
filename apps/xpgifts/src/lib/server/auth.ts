@@ -85,24 +85,6 @@ async function findCustomerByEmail(
 	return customers[0] ?? null;
 }
 
-async function getCustomerById(
-	env: WcEnv,
-	customerId: number,
-): Promise<WcCustomer | null> {
-	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
-	const response = await fetch(
-		new URL(`/wp-json/wc/v3/customers/${customerId}`, env.WC_STORE_URL),
-		{
-			headers: {
-				Authorization: `Basic ${credentials}`,
-				"User-Agent": "XP-RAY",
-			},
-		},
-	);
-	if (!response.ok) return null;
-	return (await response.json()) as WcCustomer;
-}
-
 async function sendVerificationEmail(
 	env: WcEnv,
 	customerId: number,
@@ -134,12 +116,8 @@ async function sendVerificationEmail(
 // xpgifts' own POST /wc/v3/xp/authorize endpoint instead.
 //
 // Request body is {u, p: password}; on success the response body is
-// {id, firstname, lastname} (id numeric) - confirmed via a direct API test.
-// That response does NOT include a verification flag, so `data.verified` is
-// always undefined and must not be used to gate login - verification status
-// comes from the WC customer's meta_data (see isVerified()) via a separate
-// lookup, which also doubles as the "does this account exist" check. There's
-// no bearer token in the xp/authorize response either, so we mint our own
+// {id, firstname, lastname, verified} (id numeric) - confirmed via a direct API test.
+// There's no bearer token in the xp/authorize response either, so we mint our own
 // opaque session token and own the session lifecycle entirely via KV, keyed
 // by that token.
 export async function loginCustomer(
