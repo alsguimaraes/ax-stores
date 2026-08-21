@@ -134,18 +134,20 @@ async function sendVerificationEmail(
 // xpgifts' own POST /wc/v3/xp/authorize endpoint instead.
 //
 // Request body is {u, p: password}; on success the response body is
-// {id, firstname, lastname} (id numeric) - confirmed. There's no bearer
-// token in the response, so we mint our own opaque session token and own
-// the session lifecycle entirely via KV, keyed by that token.
-//
-// Verification status still requires a separate customer lookup (WC customer
-// meta_data isn't part of this response), which doubles as the "does this
-// account exist" check.
+// {id, firstname, lastname} (id numeric) - confirmed via a direct API test.
+// That response does NOT include a verification flag, so `data.verified` is
+// always undefined and must not be used to gate login - verification status
+// comes from the WC customer's meta_data (see isVerified()) via a separate
+// lookup, which also doubles as the "does this account exist" check. There's
+// no bearer token in the xp/authorize response either, so we mint our own
+// opaque session token and own the session lifecycle entirely via KV, keyed
+// by that token.
 export async function loginCustomer(
 	env: WcEnv,
 	email: string,
 	password: string,
 ): Promise<LoginResult> {
+	console.log(`[login] authorize: attempting for ${email}`);
 	const credentials = btoa(`${env.WC_CONSUMER_KEY}:${env.WC_CONSUMER_SECRET}`);
 	const response = await fetch(
 		new URL("/wp-json/wc/v3/xp/authorize", env.WC_STORE_URL),
@@ -159,7 +161,11 @@ export async function loginCustomer(
 			body: JSON.stringify({ u: email, p: password }),
 		},
 	);
-	if (!response.ok) return { status: "invalid" };
+	console.log(`[login] authorize: HTTP ${response.status}`);
+	if (!response.ok) {
+		console.log(`[login] authorize: rejected, body=${await response.text()}`);
+		return { status: "invalid" };
+	}
 
 	const data = (await response.json()) as {
 		id: number;
@@ -167,11 +173,15 @@ export async function loginCustomer(
 		lastname: string;
 		verified: string;
 	};
+	console.log(`[login] authorize: response=${JSON.stringify(data)}`);
+	if (!data.id) {
+		console.log("[login] authorize: no id in response, treating as invalid");
+		return { status: "invalid" };
+	}
 
-	console.log("loginCustomer response data:", data);
-	if (!data.id) return { status: "invalid" };
-
-	if (data.verified !== "yes") return { status: "unverified" };
+	const verified = data.verified === "yes";
+	console.log(`[login] verification check: verified=${verified}`);
+	if (!verified) return { status: "unverified" };
 
 	const user: SessionUser = {
 		id: String(data.id),
@@ -181,6 +191,7 @@ export async function loginCustomer(
 	};
 
 	const token = await createSession(env, user);
+	console.log(`[login] session: created=${!!token}`);
 	if (!token) return { status: "invalid" };
 	return { status: "ok", token, user };
 }
