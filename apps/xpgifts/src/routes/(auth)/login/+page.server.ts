@@ -18,10 +18,18 @@ export const actions: Actions = {
 		const password = String(data.get("password") ?? "");
 
 		if (!email || !password) {
-			return fail(400, { error: "Enter your email and password.", email });
+			return fail(400, {
+				error: "Enter your email and password.",
+				email,
+				unverified: false,
+			});
 		}
 		if (!isWcConfigured(platform?.env)) {
-			return fail(500, { error: "Login is unavailable right now.", email });
+			return fail(500, {
+				error: "Login is unavailable right now.",
+				email,
+				unverified: false,
+			});
 		}
 
 		const result = await loginCustomer(platform.env, email, password);
@@ -34,7 +42,11 @@ export const actions: Actions = {
 			});
 		}
 		if (result.status !== "ok") {
-			return fail(400, { error: "Incorrect email or password.", email });
+			return fail(400, {
+				error: "Incorrect email or password.",
+				email,
+				unverified: false,
+			});
 		}
 
 		cookies.set("session", result.token, {
