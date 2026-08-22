@@ -8,12 +8,14 @@
 		success,
 		showEmail = false,
 		idPrefix,
+		countries,
 	}: {
 		values: AddressFormValues;
 		error?: string;
 		success?: boolean;
 		showEmail?: boolean;
 		idPrefix: string;
+		countries: { code: string; name: string }[];
 	} = $props();
 
 	let loading = $state(false);
@@ -131,14 +133,18 @@
 				</div>
 				<div>
 					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-country">Country</label>
-					<input
+					<select
 						id="{idPrefix}-country"
 						name="country"
-						type="text"
 						required
 						value={values.country}
-						class="input input-bordered w-full"
-					/>
+						class="select select-bordered w-full"
+					>
+						<option value="" disabled>Select a country</option>
+						{#each countries as country (country.code)}
+							<option value={country.code}>{country.name}</option>
+						{/each}
+					</select>
 				</div>
 			</div>
 			<div>

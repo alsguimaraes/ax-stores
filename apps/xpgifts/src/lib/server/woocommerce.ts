@@ -11,6 +11,7 @@ export const TTL = {
 	M: 360,
 	L: 900,
 	XL: 3600,
+	DAY: 86400,
 };
 // Falls back to mock data (see src/lib/data/*.ts) whenever these aren't set,
 // so local dev works without a real store. Set them in .dev.vars locally and
@@ -148,6 +149,7 @@ export type WcProduct = {
 	id: number;
 	slug: string;
 	name: string;
+	sku?: string;
 	description: string;
 	price: string;
 	regular_price: string;
@@ -240,6 +242,15 @@ export type WcAddress = {
 	country: string;
 	email?: string;
 	phone?: string;
+};
+
+// GET /wc/v3/data/countries - a static reference list (no pagination, no
+// auth-scoped data), used to populate the country dropdown on the address
+// forms. `states` isn't used yet but is part of the real response shape.
+export type WcCountry = {
+	code: string;
+	name: string;
+	states: { code: string; name: string }[];
 };
 
 const HTML_ENTITIES: Record<string, string> = {

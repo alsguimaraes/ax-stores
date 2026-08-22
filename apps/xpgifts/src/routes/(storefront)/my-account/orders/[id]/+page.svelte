@@ -34,7 +34,9 @@
 		<table class="table">
 			<thead>
 				<tr>
+					<th></th>
 					<th>Product</th>
+					<th>SKU</th>
 					<th>Quantity</th>
 					<th>Price</th>
 					<th>Total</th>
@@ -49,7 +51,6 @@
 									{#if item.image}
 										<img src={item.image} alt={item.name} class="h-12 w-12 rounded object-cover" />
 									{/if}
-									{item.name}
 								</a>
 							{:else}
 								<span class="flex items-center gap-3">
@@ -60,6 +61,8 @@
 								</span>
 							{/if}
 						</td>
+						<td>{item.sku}</td>
+						<td>{item.name}</td>
 						<td>{item.quantity}</td>
 						<td>${item.price.toFixed(2)}</td>
 						<td>${(item.price * item.quantity).toFixed(2)}</td>

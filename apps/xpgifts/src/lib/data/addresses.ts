@@ -43,7 +43,3 @@ const addresses: Address[] = [
 export function getAddresses(): Address[] {
 	return addresses;
 }
-
-export function getAddressById(id: string): Address | undefined {
-	return addresses.find((address) => address.id === id);
-}

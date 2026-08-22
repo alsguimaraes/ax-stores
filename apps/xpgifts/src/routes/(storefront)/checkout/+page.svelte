@@ -51,7 +51,6 @@
 								</div>
 							</label>
 						{/each}
-						<a href="/my-account/addresses/new" class="link text-sm">+ Add a new address</a>
 					</div>
 					<button class="btn btn-primary mt-4" onclick={() => (step = "payment")}>Continue to Payment</button>
 				</div>

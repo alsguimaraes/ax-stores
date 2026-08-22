@@ -1,4 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
+import { getCountries } from "$lib/data/countries";
 import { getCustomerAddresses } from "$lib/data/customerAddresses";
 import {
 	EMPTY_ADDRESS_VALUES,
@@ -13,8 +14,11 @@ import type { Actions, PageServerLoad } from "./$types";
 // logged-out visitors to /login before this route ever loads.
 export const load: PageServerLoad = async ({ platform, locals }) => {
 	if (!locals.user) redirect(303, "/login");
-	const addresses = await getCustomerAddresses(platform?.env, locals.user.id);
-	return { address: addresses.billing };
+	const [addresses, countries] = await Promise.all([
+		getCustomerAddresses(platform?.env, locals.user.id),
+		getCountries(platform?.env),
+	]);
+	return { address: addresses.billing, countries };
 };
 
 export const actions: Actions = {

@@ -15,4 +15,10 @@
 
 <h1 class="mb-6 text-2xl font-bold">Edit Shipping Address</h1>
 
-<AddressForm {values} error={form?.error} success={form?.success} idPrefix="shipping" />
+<AddressForm
+	{values}
+	error={form?.error}
+	success={form?.success}
+	idPrefix="shipping"
+	countries={data.countries}
+/>

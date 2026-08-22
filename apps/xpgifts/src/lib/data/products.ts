@@ -17,6 +17,7 @@ export type Product = {
 	slug: string;
 	title: string;
 	subtitle?: string;
+	sku?: string;
 	description: string;
 	price: number;
 	compareAtPrice?: number;
@@ -275,6 +276,7 @@ function mapWcProduct(wc: WcProduct): Product {
 		subtitle: lastPart(wc.name),
 		description: stripHtml(wc.description),
 		price: Number(wc.price),
+		sku: wc.sku || String(wc.id),
 		compareAtPrice:
 			wc.on_sale && wc.regular_price ? Number(wc.regular_price) : undefined,
 		images:

@@ -33,6 +33,7 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
 			...item,
 			productSlug: item.productSlug ?? product?.slug,
 			image: product?.images[0],
+			sku: product?.sku,
 		};
 	});
 
