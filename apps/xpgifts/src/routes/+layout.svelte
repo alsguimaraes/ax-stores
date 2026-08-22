@@ -13,7 +13,7 @@ let { children } = $props();
 let loadingTimeout: NodeJS.Timeout | null = null;
 const genericDescription = 'xpgifts';
 let description = $derived(page.data.description || genericDescription);
-let title = $derived(page.data.title ? `${page.data.title} | VolleyCore` : 'VolleyCore');
+let title = $derived(page.data.title ? `${page.data.title} | xpgifts` : 'xpgifts');
 
 onMount(async () => {
 	document.documentElement.classList.remove('no-js');

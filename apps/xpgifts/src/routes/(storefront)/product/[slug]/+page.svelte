@@ -11,22 +11,22 @@
 	let activeTab = $state<"description" | "shipping">("description");
 </script>
 
-<svelte:head><title>{data.product.name} - xpgifts</title></svelte:head>
+<svelte:head><title>{data.product.title} - xpgifts</title></svelte:head>
 
 <Breadcrumbs
 	items={[
 		{
-			label: data.category?.name ?? "Shop",
+			label: data.category?.title ?? "Shop",
 			href: data.category ? `/product-category/${data.category.slug}` : undefined
 		},
-		{ label: data.product.name }
+		{ label: data.product.title }
 	]}
 />
 
 <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 	<div>
 		<div class="rounded-box bg-base-200 aspect-square overflow-hidden">
-			<img src={data.product.images[activeImage]} alt={data.product.name} class="h-full w-full object-cover" />
+			<img src={data.product.images[activeImage]} alt={data.product.title} class="h-full w-full object-cover" />
 		</div>
 		{#if data.product.images.length > 1}
 			<div class="mt-2 flex gap-2">
@@ -45,7 +45,7 @@
 	</div>
 
 	<div>
-		<h1 class="text-2xl font-bold">{data.product.name}</h1>
+		<h1 class="text-2xl font-bold">{data.product.title}</h1>
 
 		<div class="mt-4 flex items-center gap-3">
 			<span class="text-3xl font-bold">${data.product.price.toFixed(2)}</span>

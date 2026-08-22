@@ -263,3 +263,12 @@ export function stripHtml(html: string): string {
 		(entity) => HTML_ENTITIES[entity] ?? entity,
 	);
 }
+
+export function firstPart(html: string): string {
+	return stripHtml(html).split(" : ")[0] ?? "";
+}
+
+export function lastPart(html: string): string {
+	const parts = stripHtml(html).split(" : ");
+	return parts.length > 1 ? (parts.pop() ?? "") : "";
+}

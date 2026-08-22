@@ -36,8 +36,8 @@
 						<tr>
 							<td>
 								<div class="flex items-center gap-3">
-									<img src={item.product.images[0]} alt={item.product.name} class="h-14 w-14 rounded object-cover" />
-									<a href="/product/{item.product.slug}" class="font-medium hover:underline">{item.product.name}</a>
+									<img src={item.product.images[0]} alt={item.product.title} class="h-14 w-14 rounded object-cover" />
+									<a href="/product/{item.product.slug}" class="font-medium hover:underline">{item.product.title}</a>
 								</div>
 							</td>
 							<td>${item.product.price.toFixed(2)}</td>

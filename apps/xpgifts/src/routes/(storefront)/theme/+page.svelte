@@ -14,7 +14,7 @@
 
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 	{#each data.themes as theme (theme.slug)}
-		<CategoryCard href="/theme/{theme.slug}" image={theme.image} name={theme.name} />
+		<CategoryCard href="/theme/{theme.slug}" image={theme.image} title={theme.name} />
 	{/each}
 </div>
 

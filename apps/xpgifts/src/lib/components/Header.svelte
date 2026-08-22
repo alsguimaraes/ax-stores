@@ -20,7 +20,7 @@
 			</div>
 			<ul class="menu menu-sm dropdown-content bg-base-100 rounded-box z-30 mt-3 w-56 p-2 shadow">
 				{#each categories as category (category.slug)}
-					<li><a href="/product-category/{category.slug}">{category.name}</a></li>
+					<li><a href="/product-category/{category.slug}">{category.title}</a></li>
 				{/each}
 				<li><a href="/theme">Shop by Theme</a></li>
 			</ul>
@@ -31,7 +31,7 @@
 	<div class="navbar-center hidden lg:flex">
 		<ul class="menu menu-horizontal px-1">
 			{#each categories as category (category.slug)}
-				<li><a href="/product-category/{category.slug}">{category.name}</a></li>
+				<li><a href="/product-category/{category.slug}">{category.title}</a></li>
 			{/each}
 			<li><a href="/theme">Shop by Theme</a></li>
 		</ul>

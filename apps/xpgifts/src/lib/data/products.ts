@@ -1,5 +1,7 @@
 import {
+	firstPart,
 	isWcConfigured,
+	lastPart,
 	type Paginated,
 	paginateArray,
 	stripHtml,
@@ -13,7 +15,8 @@ import {
 export type Product = {
 	id: string;
 	slug: string;
-	name: string;
+	title: string;
+	subtitle?: string;
 	description: string;
 	price: number;
 	compareAtPrice?: number;
@@ -33,7 +36,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p1",
 		slug: "custom-family-name-hoodie",
-		name: "Custom Family Name Hoodie",
+		title: "Custom Family Name Hoodie",
 		description:
 			"A cozy fleece hoodie personalized with your family's name and established date. Available in six colors.",
 		price: 48.99,
@@ -51,7 +54,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p2",
 		slug: "personalized-birth-month-tshirt",
-		name: "Personalized Birth Month T-Shirt",
+		title: "Personalized Birth Month T-Shirt",
 		description:
 			"Soft cotton tee featuring a custom birth flower and month, perfect for a birthday gift.",
 		price: 24.99,
@@ -65,7 +68,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p3",
 		slug: "matching-couple-sweatshirts",
-		name: "Matching Couple Sweatshirts (Set of 2)",
+		title: "Matching Couple Sweatshirts (Set of 2)",
 		description:
 			"His-and-hers crewneck sweatshirts with custom wedding date embroidery.",
 		price: 64.99,
@@ -79,7 +82,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p4",
 		slug: "custom-pet-portrait-tee",
-		name: "Custom Pet Portrait T-Shirt",
+		title: "Custom Pet Portrait T-Shirt",
 		description:
 			"Upload a photo of your pet and we'll turn it into a one-of-a-kind cartoon portrait print.",
 		price: 27.99,
@@ -93,7 +96,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p5",
 		slug: "embroidered-dad-cap",
-		name: 'Embroidered "World\'s Best Dad" Cap',
+		title: 'Embroidered "World\'s Best Dad" Cap',
 		description:
 			"Adjustable dad cap with custom embroidered text, a classic gift for Father's Day or birthdays.",
 		price: 19.99,
@@ -107,7 +110,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p6",
 		slug: "personalized-photo-mug",
-		name: "Personalized Photo Mug",
+		title: "Personalized Photo Mug",
 		description:
 			"Ceramic 11oz mug printed with your favorite photo and a custom message.",
 		price: 16.99,
@@ -124,7 +127,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p7",
 		slug: "custom-name-throw-pillow",
-		name: "Custom Name Throw Pillow",
+		title: "Custom Name Throw Pillow",
 		description:
 			"Soft velvet throw pillow with a custom monogram, insert included.",
 		price: 34.99,
@@ -138,7 +141,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p8",
 		slug: "engraved-wooden-cutting-board",
-		name: "Engraved Wooden Cutting Board",
+		title: "Engraved Wooden Cutting Board",
 		description:
 			"Solid acacia wood cutting board laser-engraved with a custom family name and est. date.",
 		price: 39.99,
@@ -153,7 +156,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p9",
 		slug: "birth-flower-compact-mirror",
-		name: "Birth Flower Compact Mirror",
+		title: "Birth Flower Compact Mirror",
 		description:
 			"Pocket-sized compact mirror engraved with a custom birth flower design.",
 		price: 14.99,
@@ -167,7 +170,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p10",
 		slug: "custom-family-name-coasters-set",
-		name: "Custom Family Name Coasters (Set of 4)",
+		title: "Custom Family Name Coasters (Set of 4)",
 		description:
 			"Cork-backed coasters personalized with your family name, sold as a set of four.",
 		price: 22.99,
@@ -181,7 +184,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p11",
 		slug: "new-baby-keepsake-ornament",
-		name: "New Baby Keepsake Ornament",
+		title: "New Baby Keepsake Ornament",
 		description:
 			"Hand-painted ceramic ornament personalized with baby's name and birth date.",
 		price: 18.99,
@@ -195,7 +198,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p12",
 		slug: "cozy-knit-throw-blanket",
-		name: "Cozy Knit Throw Blanket",
+		title: "Cozy Knit Throw Blanket",
 		description:
 			"Chunky knit throw blanket, personalized with an embroidered monogram corner.",
 		price: 44.99,
@@ -209,7 +212,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p13",
 		slug: "personalized-vinyl-name-stickers",
-		name: "Personalized Vinyl Name Stickers (Pack of 20)",
+		title: "Personalized Vinyl Name Stickers (Pack of 20)",
 		description:
 			"Waterproof vinyl stickers featuring a custom name in your choice of font and color.",
 		price: 9.99,
@@ -223,7 +226,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p14",
 		slug: "custom-monogram-stencil-kit",
-		name: "Custom Monogram Stencil Kit",
+		title: "Custom Monogram Stencil Kit",
 		description:
 			"Reusable stencil kit for DIY monogram projects around the home.",
 		price: 17.99,
@@ -237,7 +240,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p15",
 		slug: "wood-applique-nursery-letters",
-		name: "Wood Appliqué Nursery Letters",
+		title: "Wood Appliqué Nursery Letters",
 		description:
 			"Unfinished wood letters ready to paint, perfect for spelling out baby's name.",
 		price: 21.99,
@@ -251,7 +254,7 @@ const mockProducts: Product[] = [
 	{
 		id: "p16",
 		slug: "custom-wedding-napkins",
-		name: "Custom Wedding Napkins (Pack of 50)",
+		title: "Custom Wedding Napkins (Pack of 50)",
 		description:
 			"Printed cocktail napkins featuring the couple's initials and wedding date.",
 		price: 26.99,
@@ -268,7 +271,8 @@ function mapWcProduct(wc: WcProduct): Product {
 	return {
 		id: String(wc.id),
 		slug: wc.slug,
-		name: stripHtml(wc.name),
+		title: firstPart(wc.name),
+		subtitle: lastPart(wc.name),
 		description: stripHtml(wc.description),
 		price: Number(wc.price),
 		compareAtPrice:
@@ -389,7 +393,7 @@ export async function searchProducts(
 		const lower = q.toLowerCase();
 		const products = mockProducts.filter(
 			(product) =>
-				product.name.toLowerCase().includes(lower) ||
+				product.title.toLowerCase().includes(lower) ||
 				product.description.toLowerCase().includes(lower),
 		);
 		return paginateArray(products, page, PRODUCTS_PER_PAGE);

@@ -21,7 +21,7 @@
 	<h2 class="mb-4 text-2xl font-bold">Shop by Category</h2>
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
 		{#each data.categories as category (category.slug)}
-			<CategoryCard href="/product-category/{category.slug}" image={category.image} name={category.name} />
+			<CategoryCard href="/product-category/{category.slug}" image={category.image} title={category.title} />
 		{/each}
 	</div>
 </section>

@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params, url, platform }) => {
 				id: 0,
 				parentId: 0,
 				slug: "other",
-				name: "Other Categories",
+				title: "Other Categories",
 				description: "Browse all our other gift categories.",
 				image: "",
 			},

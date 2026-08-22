@@ -1,5 +1,7 @@
 import {
+	firstPart,
 	isWcConfigured,
+	lastPart,
 	type Paginated,
 	paginateArray,
 	stripHtml,
@@ -14,7 +16,8 @@ export type Category = {
 	id: number;
 	parentId: number;
 	slug: string;
-	name: string;
+	title: string;
+	subtitle?: string;
 	description: string;
 	image: string;
 };
@@ -28,7 +31,7 @@ const mockCategories: Category[] = [
 		id: 1,
 		parentId: 0,
 		slug: "clothing",
-		name: "Clothing",
+		title: "Clothing",
 		description: "T-shirts, hoodies, sweatshirts, and other wearable gifts.",
 		image: "https://picsum.photos/seed/xpg-clothing/640/480",
 	},
@@ -36,7 +39,7 @@ const mockCategories: Category[] = [
 		id: 2,
 		parentId: 0,
 		slug: "living-decor",
-		name: "Living & Decor",
+		title: "Living & Decor",
 		description: "Mugs, pillows, coasters, and decor to gift for the home.",
 		image: "https://picsum.photos/seed/xpg-living-decor/640/480",
 	},
@@ -44,7 +47,7 @@ const mockCategories: Category[] = [
 		id: 3,
 		parentId: 0,
 		slug: "arts-crafts",
-		name: "Arts & Crafts",
+		title: "Arts & Crafts",
 		description: "Stickers, stencils, wood appliqués, and craft supplies.",
 		image: "https://picsum.photos/seed/xpg-arts-crafts/640/480",
 	},
@@ -55,7 +58,8 @@ function mapWcCategory(wc: WcCategory): Category {
 		id: wc.id,
 		parentId: wc.parent,
 		slug: wc.slug,
-		name: stripHtml(wc.name),
+		title: firstPart(wc.name),
+		subtitle: lastPart(wc.name),
 		description: stripHtml(wc.description),
 		image: wc.image?.src ?? "https://media.xpgifts.com/placeholder.png",
 	};
@@ -74,7 +78,7 @@ const OTHER_CATEGORY: Category = {
 	id: 0,
 	parentId: 0,
 	slug: "other",
-	name: "Other",
+	title: "Other",
 	description: "Browse all our other gift categories.",
 	image: "https://media.xpgifts.com/PQMS-XX10897-ALL-PO_TEMP.jpg",
 };

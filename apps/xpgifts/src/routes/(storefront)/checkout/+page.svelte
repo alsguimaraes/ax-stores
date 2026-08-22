@@ -90,7 +90,7 @@
 						<ul class="divide-base-200 divide-y">
 							{#each cart.items as item (item.product.slug)}
 								<li class="flex justify-between py-2 text-sm">
-									<span>{item.product.name} × {item.quantity}</span>
+									<span>{item.product.title} × {item.quantity}</span>
 									<span>${(item.product.price * item.quantity).toFixed(2)}</span>
 								</li>
 							{/each}
