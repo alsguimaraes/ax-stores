@@ -1,6 +1,5 @@
 # Todo
 
-- check product titles and split on ' : '
 - edit address, country from dropdown
 - get country data from woocommerce rest api
 - use dropdown for states
