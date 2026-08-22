@@ -111,21 +111,19 @@
 			<div class="grid grid-cols-2 gap-3">
 				<div>
 					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-country">Country</label>
-					<input
+					<select
 						id="{idPrefix}-country"
 						name="country"
-						type="text"
-						list="{idPrefix}-country-options"
 						required
 						value={selectedCountry}
-						oninput={(event) => (countryOverride = event.currentTarget.value)}
-						class="input input-bordered w-full"
-					/>
-					<datalist id="{idPrefix}-country-options">
+						onchange={(event) => (countryOverride = event.currentTarget.value)}
+						class="select select-bordered w-full"
+					>
+						<option value="" disabled>Select a country</option>
 						{#each countries as country (country.code)}
-							<option value={country.code} label={country.name}></option>
+							<option value={country.code}>{country.name}</option>
 						{/each}
-					</datalist>
+					</select>
 				</div>
 				<div>
 					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-state">State / County</label>
