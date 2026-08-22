@@ -9,15 +9,25 @@ import {
 export type Country = {
 	code: string;
 	name: string;
+	states: { code: string; name: string }[];
 };
 
 // Small fallback list for local dev without WC credentials configured - the
-// real store returns WooCommerce's full ~250-country reference list.
+// real store returns WooCommerce's full ~250-country reference list. US is
+// included with a couple of states so the state dropdown behavior can be
+// exercised locally; most countries have no states in WC's own data either.
 const mockCountries: Country[] = [
-	{ code: "US", name: "United States" },
-	{ code: "CA", name: "Canada" },
-	{ code: "GB", name: "United Kingdom" },
-	{ code: "AU", name: "Australia" },
+	{
+		code: "US",
+		name: "United States",
+		states: [
+			{ code: "TX", name: "Texas" },
+			{ code: "CO", name: "Colorado" },
+		],
+	},
+	{ code: "CA", name: "Canada", states: [] },
+	{ code: "GB", name: "United Kingdom", states: [] },
+	{ code: "AU", name: "Australia", states: [] },
 ];
 
 // GET /wc/v3/data/countries is a static reference list, not scoped to a
@@ -36,5 +46,6 @@ export async function getCountries(
 	return countries.map((country) => ({
 		code: country.code,
 		name: country.name,
+		states: country.states,
 	}));
 }

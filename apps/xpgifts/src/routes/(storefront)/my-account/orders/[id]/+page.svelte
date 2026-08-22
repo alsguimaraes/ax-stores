@@ -35,17 +35,31 @@
 			<thead>
 				<tr>
 					<th></th>
-					<th>Product</th>
-					<th>SKU</th>
-					<th>Quantity</th>
-					<th>Price</th>
-					<th>Total</th>
+					<th align="left">Product</th>
+					<th align="left">SKU</th>
+					<th align="right">Quantity</th>
+					<th align="right">Price</th>
+					<th align="right">Total</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each data.order.items as item, i (i)}
 					<tr>
-						<td>
+						<td align="center">
+							{#if item.productSlug}
+								<a href="/product/{item.productSlug}" class="flex items-center gap-3 hover:underline">
+									{#if item.image}
+										<img src={item.image} alt={item.name} class="h-12 w-12 rounded object-cover" />
+									{/if}
+								</a>
+							{:else}
+								<span class="flex items-center gap-3">
+									{#if item.image}
+										<img src={item.image} alt={item.name} class="h-12 w-12 rounded object-cover" />
+									{/if}
+									{item.name}
+								</span>
+							{/if}
 							{#if item.productSlug}
 								<a href="/product/{item.productSlug}" class="flex items-center gap-3 hover:underline">
 									{#if item.image}
@@ -61,11 +75,11 @@
 								</span>
 							{/if}
 						</td>
-						<td>{item.sku}</td>
-						<td>{item.name}</td>
-						<td>{item.quantity}</td>
-						<td>${item.price.toFixed(2)}</td>
-						<td>${(item.price * item.quantity).toFixed(2)}</td>
+						<td align="left">{item.sku}</td>
+						<td align="left">{item.name}</td>
+						<td align="right">{item.quantity}</td>
+						<td align="right">${item.price.toFixed(2)}</td>
+						<td align="right">${(item.price * item.quantity).toFixed(2)}</td>
 					</tr>
 				{/each}
 			</tbody>

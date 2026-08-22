@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import type { Country } from "$lib/data/countries";
 	import type { AddressFormValues } from "$lib/server/addressForm";
 
 	let {
@@ -15,10 +16,22 @@
 		success?: boolean;
 		showEmail?: boolean;
 		idPrefix: string;
-		countries: { code: string; name: string }[];
+		countries: Country[];
 	} = $props();
 
 	let loading = $state(false);
+
+	// Tracks the country input's live value so the state datalist can narrow
+	// to that country's states (e.g. US) - empty for countries WC has no
+	// states list for, which just leaves the state input's datalist empty.
+	// Without a user override yet, falls back to `values` so it's correct on
+	// first render (including SSR) and stays correct if `values` changes
+	// later (e.g. re-rendered with submitted values after a validation error).
+	let countryOverride: string | undefined = $state(undefined);
+	let selectedCountry = $derived(countryOverride ?? values.country);
+	let currentStates = $derived(
+		countries.find((country) => country.code === selectedCountry)?.states ?? [],
+	);
 </script>
 
 <div class="card bg-base-100 max-w-lg shadow-sm">
@@ -97,6 +110,43 @@
 			</div>
 			<div class="grid grid-cols-2 gap-3">
 				<div>
+					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-country">Country</label>
+					<input
+						id="{idPrefix}-country"
+						name="country"
+						type="text"
+						list="{idPrefix}-country-options"
+						required
+						value={selectedCountry}
+						oninput={(event) => (countryOverride = event.currentTarget.value)}
+						class="input input-bordered w-full"
+					/>
+					<datalist id="{idPrefix}-country-options">
+						{#each countries as country (country.code)}
+							<option value={country.code} label={country.name}></option>
+						{/each}
+					</datalist>
+				</div>
+				<div>
+					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-state">State / County</label>
+					<input
+						id="{idPrefix}-state"
+						name="state"
+						type="text"
+						list="{idPrefix}-state-options"
+						required
+						value={values.state}
+						class="input input-bordered w-full"
+					/>
+					<datalist id="{idPrefix}-state-options">
+						{#each currentStates as state (state.code)}
+							<option value={state.name}></option>
+						{/each}
+					</datalist>
+				</div>
+			</div>
+			<div class="grid grid-cols-2 gap-3">
+				<div>
 					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-city">City</label>
 					<input
 						id="{idPrefix}-city"
@@ -108,19 +158,6 @@
 					/>
 				</div>
 				<div>
-					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-state">State</label>
-					<input
-						id="{idPrefix}-state"
-						name="state"
-						type="text"
-						required
-						value={values.state}
-						class="input input-bordered w-full"
-					/>
-				</div>
-			</div>
-			<div class="grid grid-cols-2 gap-3">
-				<div>
 					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-postalCode">Postal Code</label>
 					<input
 						id="{idPrefix}-postalCode"
@@ -130,21 +167,6 @@
 						value={values.postalCode}
 						class="input input-bordered w-full"
 					/>
-				</div>
-				<div>
-					<label class="mb-1 block text-sm font-medium" for="{idPrefix}-country">Country</label>
-					<select
-						id="{idPrefix}-country"
-						name="country"
-						required
-						value={values.country}
-						class="select select-bordered w-full"
-					>
-						<option value="" disabled>Select a country</option>
-						{#each countries as country (country.code)}
-							<option value={country.code}>{country.name}</option>
-						{/each}
-					</select>
 				</div>
 			</div>
 			<div>
