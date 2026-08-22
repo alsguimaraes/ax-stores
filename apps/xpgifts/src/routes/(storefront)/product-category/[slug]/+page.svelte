@@ -15,7 +15,7 @@
 <p class="mb-6 opacity-70">{data.category.description}</p>
 
 {#if data.children.length > 0}
-	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
 		{#each data.children as child (child.slug)}
 			<CategoryCard href="/product-category/{child.slug}" image={child.image} title={child.title} titleClass="text-base" />
 		{/each}
@@ -28,7 +28,7 @@
 {:else if data.products.length === 0}
 	<p class="opacity-70">No products in this category yet.</p>
 {:else}
-	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
 		{#each data.products as product (product.id)}
 			<ProductCard {product} />
 		{/each}

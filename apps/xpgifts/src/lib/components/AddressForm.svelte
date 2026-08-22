@@ -48,7 +48,13 @@
 			use:enhance={() => {
 				loading = true;
 				return async ({ update }) => {
-					await update();
+					// Fields use one-way `value={...}` bindings, not `bind:value`, so
+					// their DOM defaultValue is whatever was there at first mount
+					// (often blank, for a customer with no address on file yet).
+					// enhance()'s default success behavior calls form.reset(), which
+					// would wipe the just-saved values back to that stale default -
+					// reset: false keeps the submitted values on screen.
+					await update({ reset: false });
 					loading = false;
 				};
 			}}

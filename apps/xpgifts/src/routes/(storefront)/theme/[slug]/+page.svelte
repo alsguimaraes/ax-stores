@@ -18,7 +18,7 @@
 {#if data.products.length === 0}
 	<p class="opacity-70">No products for this theme yet.</p>
 {:else}
-	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
 		{#each data.products as product (product.id)}
 			<ProductCard {product} />
 		{/each}

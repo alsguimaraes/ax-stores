@@ -12,7 +12,7 @@
 
 <h1 class="mb-6 text-2xl font-bold">Shop by Theme</h1>
 
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
 	{#each data.themes as theme (theme.slug)}
 		<CategoryCard href="/theme/{theme.slug}" image={theme.image} title={theme.name} />
 	{/each}

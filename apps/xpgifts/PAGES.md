@@ -1,8 +1,6 @@
 # Todo
 
-- edit address, country from dropdown
-- get country data from woocommerce rest api
-- use dropdown for states
+- standardize grid
 
 # Deleted
 
@@ -30,3 +28,8 @@
 # email
 
 npx wrangler email sending enable xpgifts.com
+
+# standard image grid
+
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+</div>

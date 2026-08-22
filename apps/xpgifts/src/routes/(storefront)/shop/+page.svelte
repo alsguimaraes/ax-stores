@@ -12,7 +12,7 @@
 
 <h1 class="mb-6 text-2xl font-bold">All Products</h1>
 
-<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
 	{#each data.products as product (product.id)}
 		<ProductCard {product} />
 	{/each}
