@@ -18,7 +18,7 @@ export type Theme = {
 	image: string;
 };
 
-const THEMES_PER_PAGE = 20;
+const THEMES_PER_PAGE = 24;
 
 // Fallback used when WooCommerce credentials aren't configured (local dev
 // without .dev.vars). Remove once the store is fully wired up - see TODO.md.
@@ -69,32 +69,20 @@ function mapWcTopic(wc: WcTopic): Theme {
 }
 
 // The custom /xp/topics endpoint has a ~10k-row list and no parent filter
-// (see the WcTopic comment in woocommerce.ts). getThemeBySlug needs to find
-// a theme or topic anywhere in that list, so it pages through in full here;
-// getThemes paginates the raw endpoint directly instead (see below).
-const XP_TOPICS_PER_PAGE = 100;
-
 async function _getAllTopics(env: WcEnv): Promise<Theme[]> {
-	const topics: WcTopic[] = [];
-	for (let page = 1; ; page++) {
-		const batch = await wcFetch<WcTopic[]>(
+	const topics: WcTopic[] = await wcFetch<WcTopic[]>(
 			env,
 			"/xp/topics",
-			{
-				page,
-				per_page: XP_TOPICS_PER_PAGE,
-			},
+			{},
 			TTL.M,
 		);
-		topics.push(...batch);
-		if (batch.length < XP_TOPICS_PER_PAGE) break;
-	}
 	return topics.map(mapWcTopic);
 }
 
 export async function getThemes(
 	env: Partial<WcEnv> | undefined,
 	page = 1,
+	parentId = 0,
 ): Promise<Paginated<Theme>> {
 	if (!isWcConfigured(env)) {
 		return paginateArray(
@@ -107,7 +95,7 @@ export async function getThemes(
 		env,
 		"/xp/topics",
 		{
-			parent_id: 0,
+			parent_id: parentId,
 			page,
 			per_page: THEMES_PER_PAGE,
 		},

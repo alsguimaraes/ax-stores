@@ -1,6 +1,7 @@
 # Todo
 
-- standardize grid
+- social links
+- check by theme, with parent theme
 
 # Deleted
 
